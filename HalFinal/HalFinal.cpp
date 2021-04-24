@@ -3,10 +3,29 @@
 
 #include "pch.h"
 #include <iostream>
+#include <thread>
+#include "Uci.h"
 
+void consoleRead() {
+	std::string comando = "";
+	char buffer[2048];
+	while (true) {
+		std::cin.getline(buffer, 2048);
+		comando = buffer;
+		uciEnviarComando(comando);
+		if (comando == "quit")
+			break;
+	}
+}
 int main()
 {
-    std::cout << "Hello World!\n"; 
+	std::thread uci(ucirun);
+	std::thread console(consoleRead);
+	
+	uci.join();
+	console.join();
+	return 0;
+
 }
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu
