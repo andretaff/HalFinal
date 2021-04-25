@@ -7,6 +7,7 @@
 
 SharedQueue<std::string> * filain;
 SharedQueue<std::string> * filaout;
+Game game;
 
 void ucirun() 
 {

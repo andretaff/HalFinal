@@ -6,6 +6,7 @@
 Game::Game()
 {
 	blackMagicIniciar();
+	tabela = new TranspTable(10000);
 }
 
 

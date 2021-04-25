@@ -12,7 +12,7 @@ void consoleRead() {
 	while (true) {
 		std::cin.getline(buffer, 2048);
 		comando = buffer;
-		uciEnviarComando(comando);
+		uciEnviarComandoParaEngine(comando);
 		if (comando == "quit")
 			break;
 	}

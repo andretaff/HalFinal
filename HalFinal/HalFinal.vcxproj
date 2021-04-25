@@ -160,6 +160,7 @@
     <ClInclude Include="NegaMax.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="TimeControl.h" />
+    <ClInclude Include="TranspTable.h" />
     <ClInclude Include="Uci.h" />
   </ItemGroup>
   <ItemGroup>
@@ -179,6 +180,7 @@
     </ClCompile>
     <ClCompile Include="SharedQueue.cpp" />
     <ClCompile Include="TimeControl.cpp" />
+    <ClCompile Include="TranspTable.cpp" />
     <ClCompile Include="Uci.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
