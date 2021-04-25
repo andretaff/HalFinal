@@ -23,7 +23,7 @@ enum tipoPeca
 	 const int PECAS = 12;
 	 const std::string sPecas = "PpNnBbRrQqKk";
 
-	 const unsigned unsigned int MAXPLY = 15;
+	 const unsigned int MAXPLY = 15;
 
 	 const unsigned int ROQUE_REI_BRANCO = 1;    //01b
 	 const  unsigned int ROQUE_RAINHA_BRANCO = 2; //10b

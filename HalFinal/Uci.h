@@ -2,4 +2,5 @@
 #include <string>
 
 void ucirun();
-void uciEnviarComando(std::string comando);
+void uciEnviarComandoParaEngine(std::string comando);
+void uciEnviarComandoParaInterface(std::string comando);

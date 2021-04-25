@@ -1,5 +1,43 @@
 #include "pch.h"
 #include "Board.h"
+#include <list>
+#include  <algorithm>
+
+unsigned long long  boardAtaquesACasa(Board * board, unsigned long long bb, int iFrom)
+{
+	unsigned long long ataques = 0;
+	unsigned int index;
+	unsigned long long todas = board->bbs[PECAS] | board->bbs[PECAS + 1];
+	unsigned long long occ;
+
+	ataques |= (aPeao[1][iFrom] & board->bbs[(int)PEAO]);
+	ataques |= (aPeao[0][iFrom] & board->bbs[(int)PP]);
+	ataques |= (mRei[iFrom] & (board->bbs[(int)REI] | board->bbs[(int)KP]));
+	ataques |= (mCavalo[iFrom] & (board->bbs[(int)CAVALO] | board->bbs[(int)CP]));
+
+
+	index = torre[iFrom].posicao;
+	occ = torre[iFrom].mascara | todas;
+	occ *= torre[iFrom].fator;
+	occ >>= (64 - 12);
+	index = index + (unsigned int)occ;
+
+	ataques |= tabela[index] & (board->bbs[(int)TORRE] | board->bbs[(int)TP]
+		| board->bbs[(int)RAINHA] | board->bbs[(int)KP]);
+
+	index = bispo[iFrom].posicao;
+	occ = bispo[iFrom].mascara | todas;
+	occ *= bispo[iFrom].fator;
+	occ >>= (64 - 9);
+	index = index + (unsigned int)occ;
+
+	ataques |= tabela[index] & (board->bbs[(int)BISPO] | board->bbs[(int)BP]
+		| board->bbs[(int)RAINHA] | board->bbs[(int)KP]);
+
+	return ataques;
+
+}
+
 
 void boardAddPeca(Board * board, unsigned long long posicao, tipoPeca peca, int index)
 {
@@ -22,6 +60,86 @@ void boardRemovePeca(Board * board, unsigned long long posicao, tipoPeca peca, i
 		board->vPos[cor] -= pPos[(int)peca][index];
 
 //	this.chave ^= transp.chaves[(int)peca, index];
+}
+
+
+unsigned long long  boardRecuperarAtacanteMaisBarato(Board * board, unsigned long long ataques, int cor, tipoPeca * peca)
+{
+	int i;
+	unsigned long long ataque;
+	for (i = (int)PEAO + cor; i < PECAS; i += 2)
+	{
+		ataque = ataques & board->bbs[i];
+		if (ataque != 0)
+		{
+			*peca = (tipoPeca)i;
+			return (unsigned long long)((long long)ataque & -(long long)ataque);
+		}
+	}
+	return 0;
+}
+
+unsigned long long boardAtaquesRaioX(Board * board, unsigned long long ocupacao, int iFrom)
+{
+	unsigned int index;
+	unsigned long long occ;
+	unsigned long long resposta;
+	index = torre[iFrom].posicao;
+	occ = torre[iFrom].mascara | ocupacao;
+	occ *= torre[iFrom].fator;
+	occ >>= (64 - 12);
+	index = index + (unsigned int )occ;
+
+	unsigned long long xRays = ocupacao & board->bbs[(int)TORRE] | board->bbs[(int)RAINHA] |
+		board->bbs[(int)TP] | board->bbs[(int)RP];
+
+	resposta = (tabela[index] & (xRays));
+
+	index = torre[iFrom].posicao;
+	occ = torre[iFrom].mascara | ocupacao;
+	occ *= torre[iFrom].fator;
+	occ >>= (64 - 9);
+	index = index + (unsigned int)occ;
+	xRays = ocupacao & board->bbs[(int)BISPO] | board->bbs[(int)RAINHA] |
+		board->bbs[(int)BP] | board->bbs[(int)RP];
+
+	resposta |= (tabela[index] & xRays);
+
+	return resposta;
+
+}
+
+int boardSee(Board * board, int toIndex, unsigned long long toBB, tipoPeca alvo, int fromIndex, unsigned long long fromBB, tipoPeca peca)
+{
+	int d = 0;
+	int cor = (int)peca % 2;
+	int ganho[32];
+	unsigned long long ataquesPossiveis = board->bbs[(int)(PEAO)] | board->bbs[(int)(PP)] | board->bbs[(int)BISPO] | board->bbs[(int)(BP)]
+		| board->bbs[(int)(TORRE)] | board->bbs[(int)(TP)] | board->bbs[(int)RAINHA] | board->bbs[(int)(RP)];
+
+
+
+	unsigned long long occ = board->bbs[(int)PECAS] | board->bbs[(int)PECAS + 1];
+	unsigned long long ataques = boardAtaquesACasa(board,toBB, toIndex);
+	//this.print();
+	ganho[d] = vPecas[(int)alvo];
+	do
+	{
+		d++;
+		ganho[d] = vPecas[(int)peca] - ganho[d - 1];
+		if (std::max(-ganho[d - 1], ganho[d]) < 0) break;
+		ataques ^= fromBB;
+		occ ^= fromBB;
+		if ((fromBB & ataquesPossiveis) != 0)
+			ataques |= boardAtaquesRaioX(board,occ, fromIndex);
+		ataquesPossiveis &= ~fromBB;
+		fromBB = boardRecuperarAtacanteMaisBarato(board, ataques, 1 - cor, &peca);
+		fromIndex = blackMagicIndex(fromBB);
+		cor = 1 - cor;
+	} while (fromBB > 0);
+	while ((--d) > 0)
+		ganho[d - 1] = -std::max(-ganho[d - 1], ganho[d]);
+	return ganho[0];
 }
 
 
@@ -68,40 +186,6 @@ bool boardCasaAtacada(Board * board, unsigned long long bb, int corAtacante)
 
 }
 
-unsigned long long  boardAtaquesACasa(Board * board, unsigned long long bb, int iFrom)
-{
-	unsigned long long ataques = 0;
-	unsigned int index;
-	unsigned long long todas = board->bbs[PECAS] | board->bbs[PECAS + 1];
-	unsigned long long occ;
-
-	ataques |= (aPeao[1][iFrom] & board->bbs[(int)PEAO]);
-	ataques |= (aPeao[0][iFrom] & board->bbs[(int)PP]);
-	ataques |= (mRei[iFrom] & (board->bbs[(int)REI] | board->bbs[(int)KP]));
-	ataques |= (mCavalo[iFrom] & (board->bbs[(int)CAVALO] | board->bbs[(int)CP]));
-
-
-	index = torre[iFrom].posicao;
-	occ = torre[iFrom].mascara | todas;
-	occ *= torre[iFrom].fator;
-	occ >>= (64 - 12);
-	index = index + (unsigned int)occ;
-
-	ataques |= tabela[index] & (board->bbs[(int)TORRE] | board->bbs[(int)TP]
-		| board->bbs[(int)RAINHA] | board->bbs[(int)KP]);
-
-	index = bispo[iFrom].posicao;
-	occ = bispo[iFrom].mascara | todas;
-	occ *= bispo[iFrom].fator;
-	occ >>= (64 - 9);
-	index = index + (unsigned int)occ;
-
-	ataques |= tabela[index] & (board->bbs[(int)BISPO] | board->bbs[(int)BP]
-		| board->bbs[(int)RAINHA] | board->bbs[(int)KP]);
-
-	return ataques;
-
-}
 
 bool boardIsChecked(Board * board)
 {
@@ -266,77 +350,655 @@ void boardUnmakeMove(Board * board, Move * move)
 		boardRemovePeca(board, move->bbTo, move->peca, move->indicePara);
 	}
 	break;
-	case tipoMovimento.MCAPENPASSANT:
+	case MCAPENPASSANT:
 	{
-		this.addPeca(move->bbFrom, move->peca, move->indiceDe);
-		this.removePeca(move->bbTo, move->peca, move->indicePara);
+		boardAddPeca(board,move->bbFrom, move->peca, move->indiceDe);
+		boardRemovePeca(board,move->bbTo, move->peca, move->indicePara);
 		if ((int)move->peca % 2 == 0)
-			this.addPeca(move->bbTo << 8, move->pecaCap, move->indicePara + 8);
+			boardAddPeca(board,move->bbTo << 8, move->pecaCap, move->indicePara + 8);
 		else
-			this.addPeca(move->bbTo >> 8, move->pecaCap, move->indicePara - 8);
+			boardAddPeca(board,move->bbTo >> 8, move->pecaCap, move->indicePara - 8);
 	}
 	break;
 
 
-	case tipoMovimento.MROQUEK:
+	case MROQUEK:
 	{
 		int cor = (int)move->peca % 2;
 		if (cor == 0)
 		{
-			addPeca(bbConstants.I60, tipoPeca.REI, 60);
-			addPeca(bbConstants.I63, tipoPeca.TORRE, 63);
-			removePeca(bbConstants.I62, tipoPeca.REI, 62);
-			removePeca(bbConstants.I61, tipoPeca.TORRE, 61);
+			boardAddPeca(board, I60, REI, 60);
+			boardAddPeca(board, I63, TORRE, 63);
+			boardRemovePeca(board, I62, REI, 62);
+			boardRemovePeca(board,I61, TORRE, 61);
 		}
 		else
 		{
-			addPeca(bbConstants.I04, tipoPeca.KP, 4);
-			addPeca(bbConstants.I07, tipoPeca.TP, 7);
-			removePeca(bbConstants.I06, tipoPeca.KP, 6);
-			removePeca(bbConstants.I05, tipoPeca.TP, 5);
+			boardAddPeca(board,I04, KP, 4);
+			boardAddPeca(board, I07, TP, 7);
+			boardRemovePeca(board, I06, KP, 6);
+			boardRemovePeca(board, I05, TP, 5);
 		}
 	}
 	break;
 
-	case tipoMovimento.MROQUEQ:
+	case MROQUEQ:
 	{
 		int cor = (int)move->peca % 2;
 		if (cor == 0)
 		{
-			addPeca(bbConstants.I60, tipoPeca.REI, 60);
-			addPeca(bbConstants.I56, tipoPeca.TORRE, 56);
-			removePeca(bbConstants.I58, tipoPeca.REI, 58);
-			removePeca(bbConstants.I59, tipoPeca.TORRE, 59);
+			boardAddPeca(board, I60, REI, 60);
+			boardAddPeca(board, I56, TORRE, 56);
+			boardRemovePeca(board, I58, REI, 58);
+			boardRemovePeca(board, I59, TORRE, 59);
 		}
 		else
 		{
-			addPeca(bbConstants.I04, tipoPeca.KP, 4);
-			addPeca(bbConstants.I00, tipoPeca.TP, 0);
-			removePeca(bbConstants.I02, tipoPeca.KP, 2);
-			removePeca(bbConstants.I03, tipoPeca.TP, 3);
+			boardAddPeca(board, I04, KP, 4);
+			boardAddPeca(board, I00, TP, 0);
+			boardRemovePeca(board, I02, KP, 2);
+			boardRemovePeca(board, I03, TP, 3);
 		}
 	}
 	break;
 	default:
 	{
-		if ((int)move->tipo > (int)tipoMovimento.MPROMOCAP)
+		if ((int)move->tipo > (int)MPROMOCAP)
 		{
-			tipoPeca promo = (tipoPeca)((int)move->tipo - (int)tipoMovimento.MPROMOCAP);
-			addPeca(move->bbFrom, move->peca, move->indiceDe);
-			addPeca(move->bbTo, move->pecaCap, move->indicePara);
-			removePeca(move->bbTo, promo, move->indicePara);
+			tipoPeca promo = (tipoPeca)((int)move->tipo - (int)MPROMOCAP);
+			boardAddPeca(board, move->bbFrom, move->peca, move->indiceDe);
+			boardAddPeca(board, move->bbTo, move->pecaCap, move->indicePara);
+			boardRemovePeca(board, move->bbTo, promo, move->indicePara);
 		}
 		else
 		{
-			tipoPeca promo = (tipoPeca)((int)move->tipo - (int)tipoMovimento.MPROMO);
-			addPeca(move->bbFrom, move->peca, move->indiceDe);
-			removePeca(move->bbTo, promo, move->indicePara);
+			tipoPeca promo = (tipoPeca)((int)move->tipo - (int)MPROMO);
+			boardAddPeca(board,move->bbFrom, move->peca, move->indiceDe);
+			boardRemovePeca(board, move->bbTo, promo, move->indicePara);
 		}
 
 	}
 	break;
 
 	}
-	this.corMover = 1 - corMover;
+	board->corMover = 1 - board->corMover;
 
+}
+
+tipoPeca boardGetPecaPosicao(Board * board, unsigned long long posicao, int cor)
+{
+	int i;
+
+	for (i = cor; i < PECAS; i += 2)
+	{
+		if ((board->bbs[i] & posicao) != 0)
+		{
+			return (tipoPeca)i;
+		}
+	}
+	return NENHUMA;
+}
+
+void boardGenMovsTorre(Board * board, tipoPeca peca, bool capturas, std::list<Move*> * moves, bool quiet = false)
+{
+
+	unsigned long long torres = board->bbs[(int)peca + board->corMover];
+	unsigned long long movs;
+	unsigned long long pFrom, pTo;
+	int iFrom, iTo;
+	tipoPeca pecaAtacada;
+	unsigned long long amigas = board->bbs[PECAS + board->corMover];
+	unsigned long long inimigas = board->bbs[PECAS + 1 - board->corMover];
+	unsigned long long todas = amigas | inimigas;
+	unsigned long long occ;
+	Move * move;
+	unsigned int index;
+
+	if (capturas)
+	{
+		while (torres > 0)
+		{
+			pFrom = (unsigned long long)((long)torres & -(long)torres);
+			iFrom = blackMagicIndex(pFrom);
+			index = torre[iFrom].posicao;
+			occ = torre[iFrom].mascara | todas;
+			occ *= torre[iFrom].fator;
+			occ >>= (64 - 12);
+			index = index + (unsigned int )occ;
+
+			movs = tabela[index] & inimigas;
+			while (movs > 0)
+			{
+				pTo = (unsigned long long)((long)movs & -(long)movs);
+				iTo = blackMagicIndex(pTo);
+				pecaAtacada = boardGetPecaPosicao(board,pTo, 1 - board->corMover);
+				move = new Move(pFrom, pTo, MCAP,
+					(tipoPeca)((int)peca + board->corMover),
+					pecaAtacada,
+					iFrom,
+					iTo
+				);
+				move->score = boardSee(board,iTo, pTo, pecaAtacada, iFrom, pFrom, (tipoPeca)((int)peca + board->corMover));
+				if ((!quiet) || (move->score > 0))
+					moves->push_back(move);
+				movs = movs & (movs - 1);
+			}
+			torres = torres & (torres - 1);
+		}
+	}
+	else
+	{
+		while (torres > 0)
+		{
+			pFrom = (unsigned long long)((long)torres & -(long)torres);
+			iFrom = blackMagicIndex(pFrom);
+
+			index = torre[iFrom].posicao;
+			occ = torre[iFrom].mascara | todas;
+			occ *= torre[iFrom].fator;
+			occ >>= (64 - 12);
+			index = index + (unsigned int )occ;
+
+			movs = tabela[index] & ~todas;
+			while (movs > 0)
+			{
+				pTo = (unsigned long long)((long)movs & -(long)movs);
+				iTo = blackMagicIndex(pTo);
+				move = new Move(pFrom, pTo, MNORMAL,
+					(tipoPeca)((int)peca + board->corMover),
+					NENHUMA,
+					iFrom,
+					iTo
+				);
+				moves->push_back(move);
+				movs = movs & (movs - 1);
+			}
+			torres = torres & (torres - 1);
+		}
+	}
+}
+
+
+void boardGenMovsPeao(Board * board, bool capturas, std::list<Move*> * moves, bool quiet = false)
+{
+	Move * move;
+	if (capturas)
+	{
+		unsigned long long peoes = board->bbs[(int)PEAO + board->corMover];
+		unsigned long long inimigas = board->bbs[PECAS + 1 - board->corMover];
+		unsigned long long pFrom;
+		unsigned long long ataques;
+		unsigned long long pTo;
+		tipoPeca pAtacada;
+		unsigned long long promos;
+		int iFrom, iTo;
+		int j;
+
+		if (board->enPassant > -1)
+			inimigas |= blackMagicGetBBIndex(board->enPassant);
+
+		while (peoes != 0)
+		{
+			pFrom = (unsigned long long)((long long)peoes & -(long long)peoes);
+			iFrom = blackMagicIndex(pFrom);
+			ataques = aPeao[board->corMover][iFrom] & inimigas;
+			if (board->corMover == 0)
+				promos = ataques & R1;
+			else
+				promos = ataques & R8;
+
+			ataques &= ~promos;
+
+			while (promos != 0)
+			{
+				pTo = (unsigned long long)((long long)promos & -(long long)promos);
+				iTo = blackMagicIndex(pTo);
+				pAtacada = boardGetPecaPosicao(board, pTo, 1 - board->corMover);
+				for (j = (int)RAINHA + board->corMover; j > (int)PP; j -= 2)
+				{
+					move = new Move(pFrom, pTo, (tipoMovimento)((int)MPROMOCAP + j),
+						(tipoPeca)((int)PEAO + board->corMover),
+						pAtacada,
+						iFrom,
+						iTo);
+					move->score = boardSee(board,iTo, pTo, pAtacada, iFrom, pFrom, (tipoPeca)j);
+					if ((!quiet) || (move->score > 0))
+						moves->push_back(move);
+
+				}
+
+				promos = promos & (promos - 1);
+			}
+
+			while (ataques != 0)
+			{
+				pTo = (unsigned long long)((long long)ataques & -(long long)ataques);
+				iTo = blackMagicIndex(pTo);
+				if (iTo == board->enPassant)
+				{
+					move = new Move(pFrom, pTo, MCAPENPASSANT,
+						(tipoPeca)((int)PEAO + board->corMover),
+						(tipoPeca)((int)PEAO + 1 - board->corMover),
+						iFrom,
+						iTo);
+					move->score = boardSee(board, iTo, pTo, (tipoPeca)((int)PEAO + board->corMover), iFrom, pFrom, (tipoPeca)((int)PEAO + board->corMover));
+
+				}
+				else
+				{
+					pAtacada = boardGetPecaPosicao(board, pTo, 1 - board->corMover);
+					// if (pAtacada == tipoPeca.NENHUMA)
+					//     this.print();
+					move = new Move(pFrom, pTo, MCAP,
+						(tipoPeca)((int)PEAO + board->corMover),
+						pAtacada,
+						iFrom,
+						iTo);
+					move->score = boardSee(board,iTo, pTo, pAtacada, iFrom, pFrom, (tipoPeca)((int)PEAO + board->corMover));
+				}
+				if ((!quiet) || (move->score > 0))
+					moves->push_back(move);
+				ataques = ataques & (ataques - 1);
+			}
+			peoes = peoes & (peoes - 1);
+		}
+	}
+	else
+	{
+		if (board->corMover == 0)
+		{
+			unsigned long long amigas = board->bbs[PECAS + board->corMover];
+			unsigned long long inimigas = board->bbs[PECAS + 1 - board->corMover];
+			unsigned long long todas = amigas | inimigas;
+
+			unsigned long long movs = (board->bbs[(int)PEAO] >> 8) & ~todas;
+			unsigned long long movsDuplos = ((movs & R6) >> 8) & ~todas;
+			unsigned long long promos = movs & R1;
+			unsigned long long pFrom;
+			int iFrom, iTo, j;
+
+			movs &= ~promos;
+
+			while (promos != 0)
+			{
+				pFrom = (unsigned long long )(((long long)promos & -(long long)promos) << 8);
+				iFrom = blackMagicIndex(pFrom);
+				iTo = iFrom - 8;
+				for (j = (int)RAINHA + board->corMover; j > (int)PP; j -= 2)
+				{
+					move = new Move(pFrom, pFrom >> 8, (tipoMovimento)((int)MPROMO + j),
+						(tipoPeca)((int)PEAO + board->corMover),
+						NENHUMA,
+						iFrom,
+						iTo);
+					move->score = j - (int)PEAO;
+					moves->push_back(move);
+
+				}
+				promos &= (promos - 1);
+			}
+
+
+			while (movsDuplos > 0)
+			{
+				pFrom = (unsigned long long)(((long long)movsDuplos & -(long long)movsDuplos) << 16);
+				iFrom = blackMagicIndex(pFrom);
+				iTo = iFrom - 16;
+				move = new Move(pFrom, pFrom >> 16, MDUPLO, PEAO,
+					NENHUMA, iFrom, iTo);
+				moves->push_back(move);
+				movsDuplos = movsDuplos & (movsDuplos - 1);
+			}
+
+			while (movs > 0)
+			{
+				pFrom = (unsigned long long)(((long long)movs & -(long long)movs) << 8);
+				iFrom = blackMagicIndex(pFrom);
+				iTo = iFrom - 8;
+				move = new Move(pFrom, pFrom >> 8, MNORMAL, PEAO,
+					NENHUMA, iFrom, iTo);
+				moves->push_back(move);
+				movs = movs & (movs - 1);
+			}
+		}
+		else
+		{
+			unsigned long long amigas = board->bbs[PECAS + board->corMover];
+			unsigned long long inimigas = board->bbs[PECAS + 1 - board->corMover];
+			unsigned long long todas = amigas | inimigas;
+			unsigned long long movs = (board->bbs[(int)PP] << 8) & ~todas;
+			unsigned long long promos = movs & R8;
+			unsigned long long movsDuplos = ((movs & R3) << 8) & ~todas;
+			unsigned long long pFrom;
+			int iFrom, iTo, j;
+
+			movs &= ~promos;
+
+			while (promos != 0)
+			{
+				pFrom = (unsigned long long)(((long long)promos & -(long long)promos) >> 8);
+				iFrom = blackMagicIndex(pFrom);
+				iTo = iFrom + 8;
+				for (j = (int)RAINHA + board->corMover; j > (int)PP; j -= 2)
+				{
+					move = new Move(pFrom, pFrom << 8, (tipoMovimento)((int)MPROMO + j),
+						(tipoPeca)((int)PEAO + board->corMover),
+						NENHUMA,
+						iFrom,
+						iTo);
+					moves->push_back(move);
+
+				}
+				promos &= (promos - 1);
+			}
+
+			while (movsDuplos > 0)
+			{
+				pFrom = (unsigned long long)((long long)movsDuplos & -(long long)movsDuplos) >> 16;
+				iFrom = blackMagicIndex(pFrom);
+				iTo = iFrom + 16;
+				move = new Move(pFrom, pFrom << 16, MDUPLO, PP,
+					NENHUMA, iFrom, iTo);
+				moves->push_back(move);
+				movsDuplos = movsDuplos & (movsDuplos - 1);
+			}
+
+			while (movs > 0)
+			{
+				pFrom = (unsigned long long)((long long)movs & -(long long)movs) >> 8;
+				iFrom = blackMagicIndex(pFrom);
+				iTo = iFrom + 8;
+				move = new Move(pFrom, pFrom << 8, MNORMAL, PP,
+					NENHUMA, iFrom, iTo);
+				moves->push_back(move);
+				movs = movs & (movs - 1);
+			}
+		}
+	}
+}
+
+void boardGenMovsCavalo(Board * board, bool capturas, std::list<Move *> *moves, bool quiet = false)
+{
+	unsigned long long cavalos = board->bbs[(int)CAVALO + board->corMover];
+	unsigned long long movs;
+	unsigned long long pFrom, pTo;
+	int iFrom, iTo;
+	tipoPeca pecaAtacada;
+	unsigned long long amigas = board->bbs[PECAS + board->corMover];
+	unsigned long long  inimigas = board->bbs[PECAS + 1 - board->corMover];
+	unsigned long long  todas = amigas | inimigas;
+	Move * move;
+
+	if (capturas)
+	{
+		while (cavalos > 0)
+		{
+			pFrom = (unsigned long long)((long long)cavalos & -(long long)cavalos);
+			iFrom = blackMagicIndex(pFrom);
+			movs = mCavalo[iFrom] & inimigas;
+			while (movs > 0)
+			{
+				pTo = (unsigned long long)((long long)movs & -(long long)movs);
+				iTo = blackMagicIndex(pTo);
+				pecaAtacada = boardGetPecaPosicao(board,pTo, 1 - board->corMover);
+				move = new Move(pFrom, pTo, MCAP,
+					(tipoPeca)((int)CAVALO + board->corMover),
+					pecaAtacada,
+					iFrom,
+					iTo
+				);
+				move->score = boardSee(board,iTo, pTo, pecaAtacada, iFrom, pFrom, (tipoPeca)((int)CAVALO + board->corMover));
+				if ((!quiet) || (move->score > 0))
+					moves->push_back(move);
+				movs = movs & (movs - 1);
+			}
+			cavalos = cavalos & (cavalos - 1);
+		}
+	}
+	else
+	{
+		while (cavalos > 0)
+		{
+			pFrom = (unsigned long long)((long long)cavalos & -(long long)cavalos);
+			iFrom = blackMagicIndex(pFrom);
+			movs = mCavalo[iFrom] & ~todas;
+			while (movs > 0)
+			{
+				pTo = (unsigned long long)((long long)movs & -(long long)movs);
+				iTo = blackMagicIndex(pTo);
+				move = new Move(pFrom, pTo, MNORMAL,
+					(tipoPeca)((int)CAVALO + board->corMover),
+					NENHUMA,
+					iFrom,
+					iTo
+				);
+				moves->push_back(move);
+				movs = movs & (movs - 1);
+			}
+			cavalos = cavalos & (cavalos - 1);
+		}
+	}
+
+}
+
+
+void boardGenMovsBispo(Board * board, tipoPeca peca, bool capturas, std::list<Move*> * moves, bool quiet = false)
+{
+
+	unsigned long long bispos = board->bbs[(int)peca + board->corMover];
+	unsigned long long movs;
+	unsigned long long pFrom, pTo;
+	int iFrom, iTo;
+	tipoPeca pecaAtacada;
+	unsigned long long amigas = board->bbs[PECAS + board->corMover];
+	unsigned long long inimigas = board->bbs[PECAS + 1 - board->corMover];
+	unsigned long long todas = amigas | inimigas;
+	unsigned long long occ;
+	Move * move;
+	unsigned int index;
+
+	if (capturas)
+	{
+		while (bispos > 0)
+		{
+			pFrom = (unsigned long long)((long long)bispos & -(long long)bispos);
+			iFrom = blackMagicIndex(pFrom);
+			index = bispo[iFrom].posicao;
+			occ = bispo[iFrom].mascara | todas;
+			occ *= bispo[iFrom].fator;
+			occ >>= (64 - 9);
+			index = index + (unsigned int)occ;
+
+			movs = tabela[index] & inimigas;
+			while (movs > 0)
+			{
+				pTo = (unsigned long long)((long long)movs & -(long long)movs);
+				iTo = blackMagicIndex(pTo);
+				pecaAtacada = boardGetPecaPosicao(board,pTo, 1 - board->corMover);
+				move = new Move(pFrom, pTo, MCAP,
+					(tipoPeca)((int)peca + board->corMover),
+					pecaAtacada,
+					iFrom,
+					iTo
+				);
+				move->score = boardSee(board,iTo, pTo, pecaAtacada, iFrom, pFrom, (tipoPeca)((int)peca + board->corMover));
+				if ((!quiet) || (move->score > 0))
+					moves->push_back(move);
+				movs = movs & (movs - 1);
+			}
+			bispos = bispos & (bispos - 1);
+		}
+	}
+	else
+	{
+		while (bispos > 0)
+		{
+			pFrom = (unsigned long long)((long long)bispos & -(long long)bispos);
+			iFrom = blackMagicIndex(pFrom);
+
+			index = bispo[iFrom].posicao;
+			occ = bispo[iFrom].mascara | todas;
+			occ *= bispo[iFrom].fator;
+			occ >>= (64 - 9);
+			index = index + (unsigned int )occ;
+
+			movs = tabela[index] & ~todas;
+			while (movs > 0)
+			{
+				pTo = (unsigned long long)((long long)movs & -(long long)movs);
+				iTo = blackMagicIndex(pTo);
+				move = new Move(pFrom, pTo, MNORMAL,
+					(tipoPeca)((int)peca + board->corMover),
+					NENHUMA,
+					iFrom,
+					iTo
+				);
+				moves->push_back(move);
+				movs = movs & (movs - 1);
+			}
+			bispos = bispos & (bispos - 1);
+		}
+	}
+}
+
+void boardGenMovsRei(Board * board, bool capturas, std::list<Move*> * moves)
+{
+	unsigned long long reis = board->bbs[(int)REI + board->corMover];
+	unsigned long long movs;
+	unsigned long long pTo;
+	int iFrom, iTo;
+	tipoPeca pecaAtacada;
+	unsigned long long amigas = board->bbs[PECAS + board->corMover];
+	unsigned long long inimigas = board->bbs[PECAS + 1 - board->corMover];
+	unsigned long long todas = amigas | inimigas;
+	Move * move;
+
+	if (capturas)
+	{
+		iFrom = blackMagicIndex(reis);
+		movs = mRei[iFrom] & inimigas;
+		while (movs > 0)
+		{
+			pTo = (unsigned long long)((long long)movs & -(long long)movs);
+			iTo =blackMagicIndex(pTo);
+			pecaAtacada = boardGetPecaPosicao(board,pTo, 1 - board->corMover);
+			move = new Move(reis, pTo, MCAP,
+				(tipoPeca)((int)REI + board->corMover),
+				pecaAtacada,
+				iFrom,
+				iTo
+			);
+			moves->push_back(move);
+			movs = movs & (movs - 1);
+		}
+	}
+	else
+	{
+		iFrom = blackMagicIndex(reis);
+		movs = mRei[iFrom] & ~todas;
+		while (movs > 0)
+		{
+			pTo = (unsigned long long)((long long)movs & -(long long)movs);
+			iTo = blackMagicIndex(pTo);
+			move = new Move(reis, pTo, MNORMAL,
+				(tipoPeca)((int)REI + board->corMover),
+				NENHUMA,
+				iFrom,
+				iTo
+			);
+			moves->push_back(move);
+			movs = movs & (movs - 1);
+		}
+		if ((board->corMover == 0) && (((board->potencialRoque & (ROQUE_RAINHA_BRANCO | ROQUE_REI_BRANCO)) != 0)))
+		{
+			if ((board->potencialRoque & ROQUE_REI_BRANCO) != 0)
+			{
+				if (((todas & (I62 | I61)) == 0)
+					&& (!boardCasaAtacada(board,I60, 1))
+					&& (!boardCasaAtacada(board,I61, 1))
+					&& (!boardCasaAtacada(board,I62, 1)))
+				{
+					move = new Move(reis, I63,
+						MROQUEK,
+						REI, NENHUMA,
+						60, 63);
+					moves->push_back(move);
+				}
+			}
+			if ((board->potencialRoque & ROQUE_RAINHA_BRANCO) != 0)
+			{
+				if (((todas & (I57 | I58 | I59)) == 0)
+					&& (!boardCasaAtacada(board,I56, 1))
+					&& (!boardCasaAtacada(board,I57, 1))
+					&& (!boardCasaAtacada(board,I58, 1))
+					&& (!boardCasaAtacada(board,I59, 1)))
+				{
+					move = new Move(reis, I56,
+						MROQUEQ,
+						REI, NENHUMA,
+						60, 56);
+					moves->push_back(move);
+				}
+
+			}
+		}
+		else if ((board->corMover != 0) && (((board->potencialRoque & (ROQUE_RAINHA_PRETO | ROQUE_REI_PRETO)) != 0)))
+		{
+			if ((board->potencialRoque & ROQUE_REI_PRETO) != 0)
+			{
+				if (((todas & (I05 | I06)) == 0)
+					&& (!boardCasaAtacada(board,I04, 0))
+					&& (!boardCasaAtacada(board, I05, 0))
+					&& (!boardCasaAtacada(board,I06, 0)))
+				{
+					move = new Move(reis, I07,
+						MROQUEK,
+						KP, NENHUMA,
+						4, 7);
+					moves->push_back(move);
+				}
+			}
+			if ((board->potencialRoque & ROQUE_RAINHA_PRETO) != 0)
+			{
+				if (((todas & (I03 | I02 | I01)) == 0)
+					&& (!boardCasaAtacada(board,I00, 0))
+					&& (!boardCasaAtacada(board,I01, 0))
+					&& (!boardCasaAtacada(board,I02, 0))
+					&& (!boardCasaAtacada(board,I03, 0)))
+				{
+					move = new Move(reis, I56,
+						MROQUEQ,
+						KP, NENHUMA,
+						4, 0);
+					moves->push_back(move);
+				}
+
+			}
+
+		}
+	}
+
+}
+
+
+void boardGerarMovimentos(Board * board, std::list<Move*> * moves, bool quiet)
+{
+	boardGenMovsPeao(board,true, moves, quiet);
+	boardGenMovsCavalo(board,true, moves, quiet);
+	boardGenMovsBispo(board,BISPO, true, moves, quiet);
+	boardGenMovsTorre(board,TORRE, true, moves, quiet);
+	boardGenMovsBispo(board,RAINHA, true, moves, quiet);
+	boardGenMovsTorre(board,RAINHA, true, moves, quiet);
+	boardGenMovsRei(board,true, moves);
+
+	if (!quiet)
+	{
+		boardGenMovsPeao(board,false, moves);
+		boardGenMovsCavalo(board,false, moves);
+		boardGenMovsBispo(board,BISPO, false, moves);
+		boardGenMovsTorre(board,TORRE, false, moves);
+		boardGenMovsBispo(board,RAINHA, false, moves);
+		boardGenMovsTorre(board,RAINHA, false, moves);
+		boardGenMovsRei(board, false, moves);
+	}
 }

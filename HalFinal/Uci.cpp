@@ -32,7 +32,12 @@ void ucirun()
 	
 }
 
-void uciEnviarComando(std::string comando)
+void uciEnviarComandoParaEngine(std::string comando)
 {
 	filain->push_back(comando);
+}
+
+void uciEnviarComandoParaInterface(std::string comando)
+{
+	filaout->push_back(comando);
 }
