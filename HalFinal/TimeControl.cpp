@@ -35,3 +35,8 @@ void timeRun()
 			parar = true;
 	}
 }
+
+bool timeShouldStop()
+{
+	return parar;
+}

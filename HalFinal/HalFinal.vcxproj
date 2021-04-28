@@ -151,19 +151,23 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Avaliador.h" />
     <ClInclude Include="BlackMagic.h" />
     <ClInclude Include="Board.h" />
     <ClInclude Include="BoardConstants.h" />
     <ClInclude Include="DNA.h" />
     <ClInclude Include="Game.h" />
+    <ClInclude Include="SharedQueue.h" />
     <ClInclude Include="Move.h" />
     <ClInclude Include="NegaMax.h" />
+    <ClInclude Include="NegaThread.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="TimeControl.h" />
     <ClInclude Include="TranspTable.h" />
     <ClInclude Include="Uci.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Avaliador.cpp" />
     <ClCompile Include="BlackMagic.cpp" />
     <ClCompile Include="Board.cpp" />
     <ClCompile Include="BoardConstants.cpp" />
@@ -172,6 +176,7 @@
     <ClCompile Include="HalFinal.cpp" />
     <ClCompile Include="Move.cpp" />
     <ClCompile Include="NegaMax.cpp" />
+    <ClCompile Include="NegaThread.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

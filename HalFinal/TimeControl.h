@@ -4,3 +4,4 @@ void timeStart(int tipo, unsigned long long milisecs);
 unsigned long long timeEllapsed();
 void timeStop();
 void timeRun();
+bool timeShouldStop();

@@ -47,7 +47,7 @@ void boardAddPeca(Board * board, unsigned long long posicao, tipoPeca peca, int 
 	board->vMat[cor] += vPecas[(int)peca];
 	if (peca < REI)
 		board->vPos[cor] += pPos[(int)peca][index];
-//	this.chave ^= transp.chaves[(int)peca, index];
+	board->chave ^= transp->chaves[(int)peca][index];
 }
 
 void boardRemovePeca(Board * board, unsigned long long posicao, tipoPeca peca, int index)
@@ -59,7 +59,7 @@ void boardRemovePeca(Board * board, unsigned long long posicao, tipoPeca peca, i
 	if (peca < REI)
 		board->vPos[cor] -= pPos[(int)peca][index];
 
-//	this.chave ^= transp.chaves[(int)peca, index];
+	board->chave ^= transp->chaves[(int)peca][index];
 }
 
 
@@ -1001,4 +1001,22 @@ void boardGerarMovimentos(Board * board, std::list<Move*> * moves, bool quiet)
 		boardGenMovsTorre(board,RAINHA, false, moves);
 		boardGenMovsRei(board, false, moves);
 	}
+}
+
+unsigned long long boardGetChave(Board * board)
+{
+	unsigned long long chavereal = board->chave;
+	if ((board->potencialRoque & ROQUE_RAINHA_BRANCO) != 0)
+		chavereal ^= transp->chavesRoque[0];
+	if ((board->potencialRoque & ROQUE_REI_BRANCO) != 0)
+		chavereal ^= transp->chavesRoque[1];
+	if ((board->potencialRoque & ROQUE_RAINHA_PRETO) != 0)
+		chavereal ^= transp->chavesRoque[2];
+	if ((board->potencialRoque & ROQUE_REI_PRETO) != 0)
+		chavereal ^= transp->chavesRoque[3];
+	if ((board->enPassant != -1))
+		chavereal ^= transp->chaves[PECAS][board->enPassant];
+	if (board->corMover == 1)
+		chavereal ^= transp->chaveWTM;
+	return chavereal;
 }

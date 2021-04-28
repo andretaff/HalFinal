@@ -26,6 +26,8 @@ enum tipoPeca
 	 const unsigned int MAXPLY = 15;
 	 const unsigned int MAXTHREADS = 4;
 
+	 const int CHECKMATE = 999999;
+
 	 const unsigned int ROQUE_REI_BRANCO = 1;    //01b
 	 const  unsigned int ROQUE_RAINHA_BRANCO = 2; //10b
 	 const  unsigned int ROQUE_REI_PRETO = 4;

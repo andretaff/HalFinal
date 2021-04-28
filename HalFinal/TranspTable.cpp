@@ -1,7 +1,7 @@
 #include "pch.h"
 #include <fstream>
 #include "TranspTable.h"
-
+TranspTable * transp;
 
 TranspTable::TranspTable(unsigned long size)
 {
@@ -120,7 +120,7 @@ void TranspTable::armazenar(TranspItem item)
 	this->mtx[posLock].unlock();
 }
 
-bool TranspTable::recuperar(unsigned long chave, int ply, unsigned int idade, TranspItem * retorno)
+bool TranspTable::recuperar(unsigned long chave, int ply, unsigned int idade, TranspItem & retorno)
 {
 	TranspItem item;
 	unsigned int pos = (unsigned int)(chave % (unsigned long)size);
@@ -130,25 +130,26 @@ bool TranspTable::recuperar(unsigned long chave, int ply, unsigned int idade, Tr
 	item = tabela[pos];
 	if (item.chave == 0)
 	{
-		retorno = 0;
+		retorno.chave = 0;
 		return false;
 	}
 	if ((chave == item.chave) &&
 		(ply <= item.ply) &&
 		(idade <= item.idade + 1))
 	{
-		retorno = new TranspItem(item);
+		retorno =item ;
 		ok = true;
 	}
 	else if (chave == item.chave)
 	{
 		ok = false;
-		retorno = new TranspItem(item);
+		retorno = item;
 	}
 	else
 	{
-		retorno = 0;
+		retorno.chave = 0;
 		ok = false;
 	}
 	return ok;
 }
+
