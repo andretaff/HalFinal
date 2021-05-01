@@ -12,7 +12,7 @@ public:
 	NegaMax();
 	~NegaMax();
 
-	Move go(Board board);
+	Move * go(Board * board);
 
 };
 

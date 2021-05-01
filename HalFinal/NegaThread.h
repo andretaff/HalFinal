@@ -8,8 +8,9 @@
 //TODO: Tentar remover move da negadata, deve ser possível usando a tabela de transposição no retorno
 
 
-struct NegaResult
+class NegaResult
 {
+public:
 	int nota;
 	unsigned long nodes;
 	Move move;
@@ -25,6 +26,6 @@ struct NegaData {
 	Move * move;
 };
 
-void run(int id, Board board, SharedQueue<NegaResult> * results, int maxply, int age);
+void negarun(int id, Board * board, SharedQueue<NegaResult> * results, int maxply, int age);
 int negamax(NegaData * nega, int alpha, int beta, int ply, int depth);
 int negaquies(NegaData * nega, int alpha, int beta, int ply);

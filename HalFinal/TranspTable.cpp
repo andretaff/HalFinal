@@ -57,6 +57,17 @@ void TranspTable::reiniciarMovsBuscados()
 	lockMove.unlock();
 }
 
+unsigned long long  TranspTable::moveHash(Move *move)
+{
+	if ((int)move->peca < PECAS)
+		return chaves[(int)move->peca][move->indiceDe] ^ chaves[(int)move->peca][move->indicePara];
+	else
+		return 1;
+
+
+}
+
+
 bool TranspTable::verificaSeBuscado(int threadId, unsigned long long hash,unsigned long long moveHash, int ply)
 {
 	int i;
@@ -120,7 +131,7 @@ void TranspTable::armazenar(TranspItem item)
 	this->mtx[posLock].unlock();
 }
 
-bool TranspTable::recuperar(unsigned long chave, int ply, unsigned int idade, TranspItem & retorno)
+bool TranspTable::recuperar(unsigned long long chave, int ply, unsigned int idade, TranspItem & retorno)
 {
 	TranspItem item;
 	unsigned int pos = (unsigned int)(chave % (unsigned long)size);

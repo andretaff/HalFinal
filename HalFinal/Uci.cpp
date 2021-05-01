@@ -1,5 +1,5 @@
 #include "pch.h"
-#include <iostream>;
+#include <iostream>
 #include <thread>
 #include <chrono>
 #include "Uci.h"

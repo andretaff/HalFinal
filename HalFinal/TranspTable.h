@@ -1,13 +1,12 @@
-#pragma 
+#pragma once
 #include "Move.h"
 #include <mutex>
 #include <vector>
 
 //TODO: Rever vector->list
-enum tipoTranspItem { SCORE_NENHUM, SCORE_EXATO, SCORE_UPPER, SCORE_LOWER };
 
 struct TranspItem {
-	tipoTranspItem tipo;
+	int tipo;
 	int score;
 	unsigned long long chave;
 	unsigned int idade;
@@ -44,9 +43,10 @@ public:
 	void reiniciarMovsBuscados();
 	bool verificaSeBuscado(int threadId, unsigned long long hash, unsigned long long moveHash, int ply);
 	void armazenar(TranspItem item);
-	bool recuperar(unsigned long chave, int ply, unsigned int idade, TranspItem &retorno);
+	bool recuperar(unsigned long long chave, int ply, unsigned int idade, TranspItem &retorno);
 	void retiraMov(int threadId, int ply);
 	void clear();
+	unsigned long long  moveHash(Move *move);
 };
 
 extern TranspTable * transp;

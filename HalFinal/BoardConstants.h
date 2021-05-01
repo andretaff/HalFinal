@@ -25,8 +25,10 @@ enum tipoPeca
 
 	 const unsigned int MAXPLY = 15;
 	 const unsigned int MAXTHREADS = 4;
+	 const unsigned int MAXQUIES = 10;
 
 	 const int CHECKMATE = 999999;
+	 const int STALEMATE = -100;
 
 	 const unsigned int ROQUE_REI_BRANCO = 1;    //01b
 	 const  unsigned int ROQUE_RAINHA_BRANCO = 2; //10b
@@ -74,3 +76,8 @@ enum tipoPeca
 	 const unsigned long long I61 = C6 & R8;
 	 const unsigned long long I62 = C7 & R8;
 	 const unsigned long long I63 = C8 & R8;
+
+	 const int SCORE_NENHUM = 0;
+	 const int SCORE_EXATO = 1;
+	 const int SCORE_UPPER = 2;
+	 const int SCORE_LOWER = 3;

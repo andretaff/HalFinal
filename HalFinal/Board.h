@@ -21,4 +21,7 @@ void boardAddPeca(Board * board, unsigned long long posicao, tipoPeca peca, int 
 void boardRemovePeca(Board * board, unsigned long long posicao, tipoPeca peca, int index);
 void boardGerarMovimentos(Board * board, std::list<Move*> * moves, bool quiet);
 unsigned long long boardGetChave(Board * board);
-bool boardIsChecked(Board * board)
+bool boardIsChecked(Board * board);
+void boardMakeMove(Board * board, Move * move);
+void boardUnmakeMove(Board * board, Move * move);
+bool boardIsValid(Board * board);

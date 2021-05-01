@@ -1,3 +1,6 @@
+#pragma once
+#include "pch.h"
+
 const int TIME_LEVEL = 0;
 
 void timeStart(int tipo, unsigned long long milisecs);
