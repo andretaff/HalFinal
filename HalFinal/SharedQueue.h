@@ -30,6 +30,15 @@ public:
 		return item;
 	}
 
+	void clear()
+	{
+		std::unique_lock<std::mutex> mlock(mutex_);
+		queue_.clear();
+		mlock.unlock();     // unlock before notificiation to minimize mutex con
+		cond_.notify_one(); // notify one waiting thread
+
+	}
+
 	void push_back(const T& item) {
 		std::unique_lock<std::mutex> mlock(mutex_);
 		queue_.push_back(item);

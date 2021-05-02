@@ -2,7 +2,57 @@
 #include "Board.h"
 #include <list>
 #include  <algorithm>
+#include <iostream>
 
+
+void boardPrint(Board * board)
+{
+		unsigned long long posicao = 1;
+		int index = 0;
+		std::string linha = "";
+		std::cout << linha << std::endl;
+		std::cout << linha << std::endl;
+		do
+		{
+			int i;
+			for (i = 0; i < PECAS; i++)
+				if ((board->bbs[i] & posicao) != 0)
+				{
+					linha += sPecas[i];
+					break;
+				}
+			if (i == PECAS)
+				linha += " ";
+
+			if ((index + 1) % 8 == 0)
+			{
+				std::cout << linha << std::endl;
+				linha = "";
+			}
+			index++;
+			posicao <<= 1;
+		} while (index < 64);
+		if (board->corMover == 0)
+			std::cout<<"Branco para mover"<<std::endl;
+		else
+			std::cout << "Preto para mover"<<std::endl;
+
+		std::cout << "EnPass " + std::to_string(board->enPassant) << std::endl;
+		std::cout << "Roque  " + std::to_string(board->potencialRoque) << std::endl;
+		std::cout << "Chave " + std::to_string(boardGetChave(board)) << std::endl;
+}
+void boardReset(Board * board)
+{
+	for (int i = 0; i < todosBBs; i++)
+		board->bbs[i] = 0;
+	board->enPassant = 0;
+	board->potencialRoque = 0;
+	board->vMat[0] = 0;
+	board->vMat[1] = 0;
+	board->vPos[0] = 0;
+	board->vPos[1] = 0;
+	board->corMover = 0;
+}
 unsigned long long  boardAtaquesACasa(Board * board, unsigned long long bb, int iFrom)
 {
 	unsigned long long ataques = 0;
@@ -1019,6 +1069,14 @@ void boardGerarMovimentos(Board * board, std::list<Move*> * moves, bool quiet)
 		boardGenMovsRei(board, false, moves);
 	}
 }
+
+void liberarListaMovs(std::list<Move*> * moves) {
+	std::list<Move*>::iterator it;
+	for (it = moves->begin(); it != moves->end(); ++it)
+		delete *it;
+	delete moves;
+}
+
 
 unsigned long long boardGetChave(Board * board)
 {

@@ -140,9 +140,16 @@ void TranspTable::armazenar(TranspItem item)
 {
 	unsigned int pos = (unsigned int)(item.chave % (unsigned long )size);
 	unsigned int posLock = pos % (size/1000);
+	TranspItem * recuperado;
 
 	this->mtx[posLock]->lock();
-	*transptable[pos] = item;
+	recuperado = transptable[pos];
+	if ((recuperado->chave == 0) ||
+		(recuperado->idade < item.idade) ||
+		(recuperado->ply <= item.ply))
+	{
+		*transptable[pos] = item;
+	}
 	this->mtx[posLock]->unlock();
 }
 

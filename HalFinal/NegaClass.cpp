@@ -10,10 +10,12 @@ std::string NegaClass::printPV(Board * board, int depth)
 	std::string resultado = "";
 	bool encontrouTabela;
 	TranspItem retorno;
+
+	//boardPrint(board);
 	
 
 	while (depth > 0) {
-		encontrouTabela = transp->recuperar(boardGetChave(board), 0, age, retorno);
+		encontrouTabela = transp->recuperar(boardGetChave(board), 0, 0, retorno);
 		if ((encontrouTabela) && (retorno.tipo != MOVNENHUM)) {
 			resultado.append(retorno.move.ToAlgebra());
 			resultado.append(" ");
@@ -56,10 +58,11 @@ Move * NegaClass::go(Board board)
 	age++;
 	pararThreads = false;
 
-
 	while (!timeShouldStop())
 	{
+		bAchou = false;
 		profundidade++;
+		results.clear();
 		
 		for (int i = 0; i < numberOfthreads;i++)
 		{
@@ -67,7 +70,7 @@ Move * NegaClass::go(Board board)
 		}
 		
 		
-		while (!bAchou)
+		while ((!bAchou) && (!timeShouldStop()))
 		{
 			std::this_thread::sleep_for(std::chrono::milliseconds(5));
 			
@@ -103,7 +106,6 @@ Move * NegaClass::go(Board board)
 			saida.append(" time ");
 			saida.append(std::to_string(timeEllapsed()));
 			saida.append(" pv ");
-			boardMakeMove(&board, &resultado.move);
 			saida.append(resultado.move.ToAlgebra());
 			saida.append(" ");
 			saida.append(this->printPV(&board,10));

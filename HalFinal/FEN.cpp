@@ -14,6 +14,7 @@ FEN::~FEN()
 
 void FEN::tabuleiroPadrao(Board * board)
 {
+
 	lerFen(board, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq");
 }
 
@@ -22,6 +23,8 @@ void FEN::lerFen(Board * board, std::string fenString)
 	int tipo = 0;
 	unsigned int i, j;
 	char c;
+
+	boardReset(board);
 
 	i = 0;
 	int posicao = 0;

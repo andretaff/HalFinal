@@ -4,7 +4,7 @@
 Game::Game()
 {
 	blackMagicIniciar();
-	transp = new TranspTable(10000);
+	transp = new TranspTable(50000);
 	tabuleiro = new Board();
 	timer = 0;
 	negaclass = new NegaClass();
@@ -49,7 +49,7 @@ void Game::setFenPosition(std::string fenStr)
 
 void Game::newGame()
 {
-	fen->tabuleiroPadrao(tabuleiro);
+		fen->tabuleiroPadrao(tabuleiro);
 }
 
 void Game::start(int tipo, unsigned long long milisecs)
@@ -67,7 +67,7 @@ void Game::makeHumanMoves(std::string moves)
 	Move movimento;
 	int pos;
 	bool achou;
-	std::list<Move *> movel;
+	std::list<Move *> * movel;
 	std::list<Move *>::iterator it;
 	std::string move1, move2;
 
@@ -75,7 +75,7 @@ void Game::makeHumanMoves(std::string moves)
 	while (moves != "")
 	{
 		pos = moves.find(" ");
-		if (pos != std::string::npos)
+		if (pos == std::string::npos)
 			pos = moves.length();
 		move = moves.substr(0, pos);
 		move1 = move;
@@ -83,11 +83,11 @@ void Game::makeHumanMoves(std::string moves)
 		moves = moves.substr(move.length(), moves.length() - move.length());
 		trim(moves);
 		trim(move);
-		boardGerarMovimentos(tabuleiro, &movel, false);
+		movel = new std::list<Move*>();
+		boardGerarMovimentos(tabuleiro, movel, false);
 		achou = false;
-		for (it = movel.begin(); it != movel.end(); ++it) {
+		for (it = movel->begin(); it != movel->end(); ++it) {
 			movimento = **it;
-			delete *it;
 			move2 = movimento.ToAlgebra();
 			caps(move2);
 			if (move1 == move2)
@@ -101,5 +101,6 @@ void Game::makeHumanMoves(std::string moves)
 		{
 			throw std::exception("Movimento não encontrado");
 		}
+		liberarListaMovs(movel);
 	}
 }

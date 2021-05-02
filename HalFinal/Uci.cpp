@@ -4,7 +4,7 @@
 #include <chrono>
 #include "Uci.h"
 #include "SharedQueue.cpp"
-
+#include <fstream>
 SharedQueue<std::string> * filain;
 SharedQueue<std::string> * filaout;
 Game game;
@@ -78,6 +78,7 @@ void uciEnviarSinalThreadParou() {
 void ucirun() 
 {
 	std::string comando;
+	std::ofstream arqsaida("e:\\comm.txt", std::ios_base::app);
 	filain = new SharedQueue<std::string>();
 	filaout = new SharedQueue < std::string>();
 	filain->push_back("ucinewgame");
@@ -93,6 +94,7 @@ void ucirun()
 		if (filain->size() > 0)
 		{
 			comando = filain->pop_front();
+			arqsaida << comando << std::endl;
 			//filaout->push_back(comando);
 			if (comando == "quit")
 			{
@@ -113,15 +115,18 @@ void ucirun()
 				cUciPosition(comando);
 			}
 
-			if (comando.find("go") == 0)
+			if (comando.find("go ") == 0)
+			{
+				arqsaida << "GO!!" << std::endl;
 				ucigo(comando);
+			}
 
 			if (comando == "uci")
 				uciApresenta();
 		}
 		if (filaout->size() > 0)
 		{
-			std::cout << filaout->pop_front().c_str()<<"\n";
+			std::cout << filaout->pop_front().c_str()<<std::endl;
 		}
 	}
 	

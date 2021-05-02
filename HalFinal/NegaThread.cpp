@@ -5,30 +5,26 @@
 #include "Avaliador.h"
 #include <algorithm>
 
-void liberarListaMovs(std::list<Move*> * moves) {
-	std::list<Move*>::iterator it;
-	for (it = moves->begin(); it != moves->end(); ++it)
-		delete *it;
-	delete moves;
-}
+unsigned long nodes;
+unsigned long hits;
 
 void negarun(int id, Board * board, SharedQueue<NegaResult>* results, int maxply, int age)
 {
 	int nota;
 	NegaResult result;
 	NegaData * nega = new NegaData();
-	nega->nodes = 0;
-	nega->hits = 0;
+	nodes = 0;
+	hits = 0;
 	nega->board = new Board(*board);
 
 	//this.tabuleiro.print();
 	//Thread.Sleep(300);
-	nota = negamax(nega, -99999999, +99999999, maxply, 0);
-	result.nota = nota;
+	result.nota = negamax(nega, -99999999, +99999999, maxply, 0);
+	result.nodes = nodes;
+	result.hits = hits;
+	
 	if (nega->move!=0)
 		result.move = *(nega->move);
-	result.nodes = nega->nodes;
-	result.hits = nega->hits;
 	
 	//Console.Out.WriteLine("Q " + this.quiesNodes.ToString());
 	if ((!timeShouldStop()) && (results->size() == 0))
@@ -51,13 +47,13 @@ int negaquies(NegaData * nega, int alfa, int beta, int ply, int depth)
 		return 0;
 
 
-	nega->nodes++;
+	nodes++;
 
 
 	bool encontrouTabela = transp->recuperar(chaveLocal, 0, nega->age, retornoTabela);
 	if (encontrouTabela)
 	{
-		nega->hits++;
+		hits++;
 		if (retornoTabela.tipo == SCORE_EXATO)
 		{
 			return retornoTabela.score;
@@ -191,15 +187,15 @@ int negamax(NegaData * nega, int alpha, int beta, int ply, int depth)
 		return 0;
 	}
 
-	nega->nodes++;
+
 	bool encontrou;
 	TranspItem retornoTabela;
-
+	nodes++;
 	encontrou = transp->recuperar(chaveLocal, ply, nega->age, retornoTabela);
 
 	if (encontrou)
 	{
-		nega->hits++;
+		hits++;
 		if (depth == 0)
 		{
 			melhorMov = new Move(retornoTabela.move);
@@ -216,7 +212,7 @@ int negamax(NegaData * nega, int alpha, int beta, int ply, int depth)
 		}
 		else if (retornoTabela.tipo == SCORE_LOWER)
 		{
-			alpha = std::max(alpha,retornoTabela.score);
+			alpha = std::max(alpha, retornoTabela.score);
 		}
 		if (alpha > beta)
 		{
@@ -224,7 +220,7 @@ int negamax(NegaData * nega, int alpha, int beta, int ply, int depth)
 			delete moves;
 			return retornoTabela.score;
 		}
-		if  (retornoTabela.move.tipo != MOVNENHUM)
+		if (retornoTabela.move.tipo != MOVNENHUM)
 		{
 			retornoTabela.move.score = SCORE_MOVE_HASH;
 			moves->push_front(new Move(retornoTabela.move));
@@ -245,12 +241,14 @@ int negamax(NegaData * nega, int alpha, int beta, int ply, int depth)
 	//            if (ply == 0)
 	//                return avaliador.avaliar(tabuleiro);
 
-	boardGerarMovimentos(nega->board,moves, false);
+	boardGerarMovimentos(nega->board, moves, false);
 	moves->sort(compareMoves);
 
 
 	do
 	{
+		if (timeShouldStop())
+			break;
 		if (atrasados->size() != 0)
 		{
 			liberarListaMovs(moves);
@@ -271,12 +269,8 @@ int negamax(NegaData * nega, int alpha, int beta, int ply, int depth)
 				continue;
 
 			if (timeShouldStop())
-			{
-				liberarListaMovs(moves);
-				delete atrasados;
-				return 0;
-			}
-			if ((!transp->verificaSeBuscado(nega->id,chaveLocal,transp->moveHash(move),ply)))
+				break;
+			if ((!transp->verificaSeBuscado(nega->id, chaveLocal, transp->moveHash(move), ply)))
 			{
 				atrasados->push_back(move);
 				continue;
@@ -286,7 +280,7 @@ int negamax(NegaData * nega, int alpha, int beta, int ply, int depth)
 			//tabuleiro.print();
 			if (!boardIsValid(nega->board))
 			{
-				boardUnmakeMove(nega->board,move);
+				boardUnmakeMove(nega->board, move);
 				transp->retiraMov(nega->id, ply);
 			}
 			else
@@ -294,7 +288,7 @@ int negamax(NegaData * nega, int alpha, int beta, int ply, int depth)
 				if (ply > 1)
 					valor = -negamax(nega, -beta, -alpha, ply - 1, depth + 1);
 				else
-					valor = -negaquies(nega,-beta, -alpha, MAXQUIES, depth + 1);
+					valor = -negaquies(nega, -beta, -alpha, MAXQUIES, depth + 1);
 				if (valor > melhorValor)
 				{
 					melhorMov = move;
@@ -305,16 +299,16 @@ int negamax(NegaData * nega, int alpha, int beta, int ply, int depth)
 				if (alpha > beta)
 				{
 
-					boardUnmakeMove(nega->board,move);
-					transp->retiraMov(nega->id,ply);
-					
-					   if (chaveLocal != boardGetChave(nega->board))
-					   {
-						   throw std::exception("erro");
-					   }
+					boardUnmakeMove(nega->board, move);
+					transp->retiraMov(nega->id, ply);
+
+					if (chaveLocal != boardGetChave(nega->board))
+					{
+						throw std::exception("erro");
+					}
 					break;
 				}
-				boardUnmakeMove(nega->board,move);
+				boardUnmakeMove(nega->board, move);
 				transp->retiraMov(nega->id, ply);
 				// if (chaveLocal != tabuleiro.getChave())
 				// {
@@ -343,30 +337,32 @@ int negamax(NegaData * nega, int alpha, int beta, int ply, int depth)
 
 	if (depth == 0)
 	{
-		if (!timeShouldStop())
+		if (melhorMov != 0)
 		{
 			nega->move = new Move(*melhorMov);
 		}
-		else
-		{ }
 	}
 	if (check)
 		ply--;
 
-	TranspItem itemT ;
-	itemT.move = *melhorMov;
-	itemT.idade = nega->age;
-	itemT.score = melhorValor;
-	itemT.chave = chaveLocal;
-	itemT.ply = ply;
+	if (!timeShouldStop())
+	{
 
-	if (alpha <= alfaOriginal)
-		itemT.tipo = SCORE_UPPER;
-	else if (alpha > beta)
-		itemT.tipo = SCORE_LOWER;
-	else
-		itemT.tipo = SCORE_EXATO;
-	transp->armazenar(itemT);
+		TranspItem itemT;
+		itemT.move = *melhorMov;
+		itemT.idade = nega->age;
+		itemT.score = melhorValor;
+		itemT.chave = chaveLocal;
+		itemT.ply = ply;
+
+		if (alpha <= alfaOriginal)
+			itemT.tipo = SCORE_UPPER;
+		else if (alpha > beta)
+			itemT.tipo = SCORE_LOWER;
+		else
+			itemT.tipo = SCORE_EXATO;
+		transp->armazenar(itemT);
+	}
 	liberarListaMovs(moves);
 	delete atrasados;
 	return melhorValor;

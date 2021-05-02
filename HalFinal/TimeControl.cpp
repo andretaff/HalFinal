@@ -37,7 +37,7 @@ void timeRun()
 		while ((!parar) && (!interromperExecucao)) {
 			std::this_thread::sleep_for(std::chrono::milliseconds(5));
 			end = std::chrono::steady_clock::now();
-			if (std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() > duracao)
+			if (std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() > duracao)
 				parar = true;
 		}
 	}

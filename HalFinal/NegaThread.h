@@ -12,15 +12,13 @@ class NegaResult
 {
 public:
 	int nota;
-	unsigned long nodes;
 	Move move;
+	unsigned long nodes;
 	unsigned long hits;
 };
 struct NegaData {
 	Board * board;
 	int maxply;
-	unsigned long nodes;
-	unsigned long hits;
 	unsigned int id;
 	int age;
 	Move * move;

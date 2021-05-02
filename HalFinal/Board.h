@@ -26,3 +26,6 @@ void boardMakeMove(Board * board, Move * move);
 void boardUnmakeMove(Board * board, Move * move);
 bool boardIsValid(Board * board);
 void boardAddPecaHumana(Board * board, tipoPeca peca, int index);
+void boardPrint(Board * board);
+void boardReset(Board * board);
+void liberarListaMovs(std::list<Move*> * moves);
