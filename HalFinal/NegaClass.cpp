@@ -103,9 +103,11 @@ Move * NegaClass::go(Board board)
 			saida.append(" time ");
 			saida.append(std::to_string(timeEllapsed()));
 			saida.append(" pv ");
+			boardMakeMove(&board, &resultado.move);
 			saida.append(resultado.move.ToAlgebra());
 			saida.append(" ");
 			saida.append(this->printPV(&board,10));
+			boardUnmakeMove(&board, &resultado.move);
 			uciEnviarComandoParaInterface(saida);
 			
 		}

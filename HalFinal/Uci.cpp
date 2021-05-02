@@ -23,7 +23,7 @@ void ucigo(std::string comando) {
 	if (gameThread != 0) {
 		throw std::exception("Engine já iniciada");
 	}
-	if (comando.find("infinite") != std::string::npos) {
+	if ((comando.find("infinite") != std::string::npos) || (comando == "go")) {
 		game.start(TIME_INFINITO,0);
 	}
 	if (comando.find("movetime") != std::string::npos) {
@@ -66,6 +66,7 @@ void uciEliminarThread() {
 	if (gameThread != 0) {
 		gameThread->join();
 		delete gameThread;
+		gameThread = 0;
 	}
 }
 
@@ -92,7 +93,7 @@ void ucirun()
 		if (filain->size() > 0)
 		{
 			comando = filain->pop_front();
-			filaout->push_back(comando);
+			//filaout->push_back(comando);
 			if (comando == "quit")
 			{
 				game.stop();

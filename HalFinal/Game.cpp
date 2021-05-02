@@ -38,8 +38,6 @@ void Game::stop()
 {
 	if (timer != 0) {
 		timeStop();
-		timer->join();
-		delete timer;
 	}
 	
 }

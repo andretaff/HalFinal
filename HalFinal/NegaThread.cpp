@@ -25,7 +25,8 @@ void negarun(int id, Board * board, SharedQueue<NegaResult>* results, int maxply
 	//Thread.Sleep(300);
 	nota = negamax(nega, -99999999, +99999999, maxply, 0);
 	result.nota = nota;
-	result.move = *(nega->move);
+	if (nega->move!=0)
+		result.move = *(nega->move);
 	result.nodes = nega->nodes;
 	result.hits = nega->hits;
 	
@@ -113,7 +114,10 @@ int negaquies(NegaData * nega, int alfa, int beta, int ply, int depth)
 	{
 		move = *it;
 		if (timeShouldStop())
+		{
+			liberarListaMovs(moves);
 			return 0;
+		}
 		boardMakeMove(nega->board, move);
 		if (!boardIsValid(nega->board))
 		{
@@ -182,6 +186,8 @@ int negamax(NegaData * nega, int alpha, int beta, int ply, int depth)
 
 	if (timeShouldStop())
 	{
+		delete atrasados;
+		delete moves;
 		return 0;
 	}
 
@@ -214,6 +220,8 @@ int negamax(NegaData * nega, int alpha, int beta, int ply, int depth)
 		}
 		if (alpha > beta)
 		{
+			delete atrasados;
+			delete moves;
 			return retornoTabela.score;
 		}
 		if  (retornoTabela.move.tipo != MOVNENHUM)
@@ -245,7 +253,8 @@ int negamax(NegaData * nega, int alpha, int beta, int ply, int depth)
 	{
 		if (atrasados->size() != 0)
 		{
-			moves->clear();
+			liberarListaMovs(moves);
+			moves = new std::list<Move*>();
 
 			while (atrasados->size() > 0)
 			{
@@ -321,6 +330,7 @@ int negamax(NegaData * nega, int alpha, int beta, int ply, int depth)
 	if (melhorMov == 0)
 	{
 		liberarListaMovs(moves);
+		delete atrasados;
 		if (check)
 		{
 			return -(CHECKMATE - depth);
@@ -358,7 +368,7 @@ int negamax(NegaData * nega, int alpha, int beta, int ply, int depth)
 		itemT.tipo = SCORE_EXATO;
 	transp->armazenar(itemT);
 	liberarListaMovs(moves);
-
+	delete atrasados;
 	return melhorValor;
 
 }

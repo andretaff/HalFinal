@@ -415,38 +415,38 @@ std::string blackMagicBBToString(unsigned long long bb)
 {
 	std::string s = "";
 	if ((bb & C1) != 0)
-		s +="a";
+		s.append("a");
 	else if ((bb & C2) != 0)
-		s += "b";
+		s.append("b");
 	else if ((bb & C3) != 0)
-		s +="c";
+		s.append("c");
 	else if ((bb & C4) != 0)
-		s +="d";
+		s.append("d");
 	else if ((bb & C5) != 0)
-		s += "e";
+		s.append("e");
 	else if ((bb & C6) != 0)
-		s +="f";
+		s.append("f");
 	else if ((bb & C7) != 0)
-		s + "g";
+		s.append("g");
 	else if ((bb & C8) != 0)
-		s += "h";
+		s.append("h");
 
 	if ((bb & R1) != 0)
-		s += "8";
+		s.append("8");
 	else if ((bb & R2) != 0)
-		s+="7";
+		s.append("7");
 	else if ((bb & R3) != 0)
-		s+="6";
+		s.append("6");
 	else if ((bb & R4) != 0)
-		s+="5";
+		s.append("5");
 	else if ((bb & R5) != 0)
-		s+="4";
+		s.append("4");
 	else if ((bb & R6) != 0)
-		s+="3";
+		s.append("3");
 	else if ((bb & R7) != 0)
-		s+="2";
+		s.append("2");
 	else if ((bb & R8) != 0)
-		s+="1";
+		s.append("1");
 
 	return s;
 }

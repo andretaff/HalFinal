@@ -487,6 +487,9 @@ void boardGenMovsTorre(Board * board, tipoPeca peca, bool capturas, std::list<Mo
 				move->score = boardSee(board,iTo, pTo, pecaAtacada, iFrom, pFrom, (tipoPeca)((int)peca + board->corMover));
 				if ((!quiet) || (move->score > 0))
 					moves->push_back(move);
+				else
+					delete move;
+
 				movs = movs & (movs - 1);
 			}
 			torres = torres & (torres - 1);
@@ -570,6 +573,8 @@ void boardGenMovsPeao(Board * board, bool capturas, std::list<Move*> * moves, bo
 					move->score = boardSee(board,iTo, pTo, pAtacada, iFrom, pFrom, (tipoPeca)j);
 					if ((!quiet) || (move->score > 0))
 						moves->push_back(move);
+					else
+						delete move;
 
 				}
 
@@ -604,6 +609,8 @@ void boardGenMovsPeao(Board * board, bool capturas, std::list<Move*> * moves, bo
 				}
 				if ((!quiet) || (move->score > 0))
 					moves->push_back(move);
+				else
+					delete move;
 				ataques = ataques & (ataques - 1);
 			}
 			peoes = peoes & (peoes - 1);
@@ -756,6 +763,8 @@ void boardGenMovsCavalo(Board * board, bool capturas, std::list<Move *> *moves, 
 				move->score = boardSee(board,iTo, pTo, pecaAtacada, iFrom, pFrom, (tipoPeca)((int)CAVALO + board->corMover));
 				if ((!quiet) || (move->score > 0))
 					moves->push_back(move);
+				else 
+					delete move;
 				movs = movs & (movs - 1);
 			}
 			cavalos = cavalos & (cavalos - 1);
@@ -830,6 +839,8 @@ void boardGenMovsBispo(Board * board, tipoPeca peca, bool capturas, std::list<Mo
 				move->score = boardSee(board,iTo, pTo, pecaAtacada, iFrom, pFrom, (tipoPeca)((int)peca + board->corMover));
 				if ((!quiet) || (move->score > 0))
 					moves->push_back(move);
+				else
+					delete move;
 				movs = movs & (movs - 1);
 			}
 			bispos = bispos & (bispos - 1);
