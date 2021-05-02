@@ -72,5 +72,5 @@ std::string Move::ToAlgebra()
 
 bool compareMoves(Move * move1, Move * move2)
 {
-	return move1->score>=move2->score;
+	return move1->score>move2->score;
 }

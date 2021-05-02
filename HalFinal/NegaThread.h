@@ -28,4 +28,4 @@ struct NegaData {
 
 void negarun(int id, Board * board, SharedQueue<NegaResult> * results, int maxply, int age);
 int negamax(NegaData * nega, int alpha, int beta, int ply, int depth);
-int negaquies(NegaData * nega, int alpha, int beta, int ply);
+int negaquies(NegaData * nega, int alfa, int beta, int ply, int depth);

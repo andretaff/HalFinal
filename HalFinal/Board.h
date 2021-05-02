@@ -25,3 +25,4 @@ bool boardIsChecked(Board * board);
 void boardMakeMove(Board * board, Move * move);
 void boardUnmakeMove(Board * board, Move * move);
 bool boardIsValid(Board * board);
+void boardAddPecaHumana(Board * board, tipoPeca peca, int index);

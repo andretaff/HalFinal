@@ -7,8 +7,19 @@ TranspTable::TranspTable(unsigned long size)
 {
 	this->size = size;
 	this->read();
-	this->tabela = new TranspItem[size];
-	this->mtx = new std::mutex[size / 1000];
+	this->transptable = new TranspItem* [size];
+	
+	this->mtx = new std::mutex*[size / 1000];
+
+	for (unsigned int i = 0;  i < size; i++)
+	{
+		this->transptable[i] = new TranspItem();
+	}
+
+	for (unsigned int i = 0; i < size / 1000; i++)
+		this->mtx[i] = new std::mutex();
+
+
 	lockMove.lock();
 	for (int i = 0; i < MAXTHREADS; i++)
 	{
@@ -25,7 +36,11 @@ TranspTable::TranspTable(unsigned long size)
 
 TranspTable::~TranspTable()
 {
-	delete tabela;
+	for (int i = 0; i < size; i++)
+		delete transptable[i];
+	for (int i = 0; i < size / 1000; i++)
+		delete mtx[i];
+	delete transptable;
 	delete mtx;
 	lockMove.lock();
 	for (int i = 0; i <4; i++)
@@ -95,7 +110,7 @@ void TranspTable::retiraMov(int threadId,int ply)
 void TranspTable::clear()
 {
 	for (unsigned int i = 0; i < size; i++)
-		this->tabela[i].chave = 0;
+		this->transptable[i]->chave = 0;
 }
 
 void TranspTable::read()
@@ -124,24 +139,26 @@ void TranspTable::read()
 void TranspTable::armazenar(TranspItem item)
 {
 	unsigned int pos = (unsigned int)(item.chave % (unsigned long )size);
-	unsigned int posLock = pos % 1000;
+	unsigned int posLock = pos % (size/1000);
 
-	this->mtx[posLock].lock();
-	tabela[pos] = item;
-	this->mtx[posLock].unlock();
+	this->mtx[posLock]->lock();
+	*transptable[pos] = item;
+	this->mtx[posLock]->unlock();
 }
 
 bool TranspTable::recuperar(unsigned long long chave, int ply, unsigned int idade, TranspItem & retorno)
 {
 	TranspItem item;
 	unsigned int pos = (unsigned int)(chave % (unsigned long)size);
-	unsigned int posLock = pos % 1000;
+	unsigned int posLock = pos % (size/1000);
 	bool ok = false;
-	this->mtx[posLock].lock();
-	item = tabela[pos];
+	this->mtx[posLock]->lock();
+	item = TranspItem(*(this->transptable[pos]));
+	this->mtx[posLock]->unlock();
 	if (item.chave == 0)
 	{
 		retorno.chave = 0;
+		retorno.move.tipo = MOVNENHUM;
 		return false;
 	}
 	if ((chave == item.chave) &&
@@ -159,6 +176,7 @@ bool TranspTable::recuperar(unsigned long long chave, int ply, unsigned int idad
 	else
 	{
 		retorno.chave = 0;
+		retorno.move.tipo = MOVNENHUM;
 		ok = false;
 	}
 	return ok;

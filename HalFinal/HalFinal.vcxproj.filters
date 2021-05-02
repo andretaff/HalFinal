@@ -42,9 +42,6 @@
     <ClInclude Include="DNA.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="NegaMax.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="TranspTable.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -55,6 +52,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Avaliador.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FEN.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="helpers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NegaClass.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -92,9 +98,6 @@
     <ClCompile Include="DNA.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="NegaMax.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="TranspTable.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -102,6 +105,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Avaliador.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FEN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="helpers.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="NegaClass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

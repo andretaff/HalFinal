@@ -156,10 +156,12 @@
     <ClInclude Include="Board.h" />
     <ClInclude Include="BoardConstants.h" />
     <ClInclude Include="DNA.h" />
+    <ClInclude Include="FEN.h" />
     <ClInclude Include="Game.h" />
+    <ClInclude Include="helpers.h" />
     <ClInclude Include="SharedQueue.h" />
     <ClInclude Include="Move.h" />
-    <ClInclude Include="NegaMax.h" />
+    <ClInclude Include="NegaClass.h" />
     <ClInclude Include="NegaThread.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="TimeControl.h" />
@@ -172,10 +174,12 @@
     <ClCompile Include="Board.cpp" />
     <ClCompile Include="BoardConstants.cpp" />
     <ClCompile Include="DNA.cpp" />
+    <ClCompile Include="FEN.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="HalFinal.cpp" />
+    <ClCompile Include="helpers.cpp" />
     <ClCompile Include="Move.cpp" />
-    <ClCompile Include="NegaMax.cpp" />
+    <ClCompile Include="NegaClass.cpp" />
     <ClCompile Include="NegaThread.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

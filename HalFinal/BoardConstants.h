@@ -24,7 +24,7 @@ enum tipoPeca
 	 const std::string sPecas = "PpNnBbRrQqKk";
 
 	 const unsigned int MAXPLY = 15;
-	 const unsigned int MAXTHREADS = 4;
+	 const unsigned int MAXTHREADS = 1;
 	 const unsigned int MAXQUIES = 10;
 
 	 const int CHECKMATE = 999999;

@@ -5,6 +5,7 @@
 #include <iostream>
 #include <thread>
 #include "Uci.h"
+#include "NegaClass.h"
 
 void consoleRead() {
 	std::string comando = "";
@@ -21,7 +22,6 @@ int main()
 {
 	std::thread uci(ucirun);
 	std::thread console(consoleRead);
-	
 	uci.join();
 	console.join();
 	return 0;

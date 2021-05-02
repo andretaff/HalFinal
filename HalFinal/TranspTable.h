@@ -25,9 +25,9 @@ private:
 	};
 
 	unsigned long size;
-	std::mutex * mtx;
+	std::mutex ** mtx;
 	std::mutex lockMove;
-	TranspItem * tabela;
+	TranspItem ** transptable;
 	std::vector<movBusc*> movsBuscados[MAXTHREADS];
 
 	void read();

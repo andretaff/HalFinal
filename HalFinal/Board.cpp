@@ -38,6 +38,12 @@ unsigned long long  boardAtaquesACasa(Board * board, unsigned long long bb, int 
 
 }
 
+void boardAddPecaHumana(Board * board, tipoPeca peca, int index)
+{
+	unsigned long long posicao = (unsigned long long) std::pow(2, index);
+	boardAddPeca(board, posicao, peca, index);
+}
+
 
 void boardAddPeca(Board * board, unsigned long long posicao, tipoPeca peca, int index)
 {
@@ -458,7 +464,7 @@ void boardGenMovsTorre(Board * board, tipoPeca peca, bool capturas, std::list<Mo
 	{
 		while (torres > 0)
 		{
-			pFrom = (unsigned long long)((long)torres & -(long)torres);
+			pFrom = (unsigned long long)((long long)torres & -(long long)torres);
 			iFrom = blackMagicIndex(pFrom);
 			index = torre[iFrom].posicao;
 			occ = torre[iFrom].mascara | todas;
@@ -469,7 +475,7 @@ void boardGenMovsTorre(Board * board, tipoPeca peca, bool capturas, std::list<Mo
 			movs = tabela[index] & inimigas;
 			while (movs > 0)
 			{
-				pTo = (unsigned long long)((long)movs & -(long)movs);
+				pTo = (unsigned long long)((long long)movs & -(long long)movs);
 				iTo = blackMagicIndex(pTo);
 				pecaAtacada = boardGetPecaPosicao(board,pTo, 1 - board->corMover);
 				move = new Move(pFrom, pTo, MCAP,
@@ -490,7 +496,7 @@ void boardGenMovsTorre(Board * board, tipoPeca peca, bool capturas, std::list<Mo
 	{
 		while (torres > 0)
 		{
-			pFrom = (unsigned long long)((long)torres & -(long)torres);
+			pFrom = (unsigned long long)((long long)torres & -(long long)torres);
 			iFrom = blackMagicIndex(pFrom);
 
 			index = torre[iFrom].posicao;
@@ -502,7 +508,7 @@ void boardGenMovsTorre(Board * board, tipoPeca peca, bool capturas, std::list<Mo
 			movs = tabela[index] & ~todas;
 			while (movs > 0)
 			{
-				pTo = (unsigned long long)((long)movs & -(long)movs);
+				pTo = (unsigned long long)((long long)movs & -(long long)movs);
 				iTo = blackMagicIndex(pTo);
 				move = new Move(pFrom, pTo, MNORMAL,
 					(tipoPeca)((int)peca + board->corMover),
