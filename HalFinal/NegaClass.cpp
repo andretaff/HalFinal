@@ -51,10 +51,10 @@ Move * NegaClass::go(Board board)
 	int profundidade = 1;
 	NegaResult resultadoTemp;
 	NegaResult resultado;
-	std::list<std::thread*> threads;
+	std::deque<std::thread*> threads;
 	SharedQueue<class NegaResult> results; 
 	bool bAchou = false;
-	std::list<std::thread *>::iterator it;
+	std::deque<std::thread *>::iterator it;
 	age++;
 	pararThreads = false;
 

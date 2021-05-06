@@ -19,6 +19,7 @@ void negarun(int id, Board * board, SharedQueue<NegaResult>* results, int maxply
 
 	//this.tabuleiro.print();
 	//Thread.Sleep(300);
+	nega->id = id;
 	result.nota = negamax(nega, -99999999, +99999999, maxply, 0);
 	result.nodes = nodes;
 	result.hits = hits;
@@ -36,14 +37,15 @@ int negaquies(NegaData * nega, int alfa, int beta, int ply, int depth)
 {
 	int alfaOriginal = alfa;
 	int valor;
-	std::list<Move *> * moves = new std::list<Move*>();
+	ListaMovs moves;
 	TranspItem retornoTabela;
 	bool check;
 	unsigned long long chaveLocal = boardGetChave(nega->board);
 	bool moveu = false;
-	Move * move;
+	Move move;
 
 	if (timeShouldStop())
+
 		return 0;
 
 
@@ -78,47 +80,45 @@ int negaquies(NegaData * nega, int alfa, int beta, int ply, int depth)
 	//nega->quiesNodes++;
 
 
-
 	if (ply == 0)
+	{
 		return avaliar(nega->board);
+	}
 	check = boardIsChecked(nega->board);
 
 	boardGerarMovimentos(nega->board, moves, !check);
 
-	if ((moves->size() == 0) && (!check))
+	if ((moves.size == 0) && (!check))
 	{
-		delete moves;
 		return avaliar(nega->board);
 	}
-	else if ((moves->size() == 0) && (check))
+	else if ((moves.size == 0) && (check))
 	{
-		delete moves;
 		return -(CHECKMATE - depth);
 	}
 	//            Console.Out.WriteLine("-------------------------ANTES");
 	//            foreach (Move move in moves)
 	//                move.print();
+	listSort(moves);
 
-	moves->sort(compareMoves);
 	//            Console.Out.WriteLine("-------------------------");
 	//            foreach (Move move in moves)
 	//               move.print();
    //tabuleiro.print();
 
-	std::list<Move*>::iterator it;
-	for (it = moves->begin(); it != moves->end();++it)
+	
+	for (int i = 0; i<moves.size;i++)
 	{
-		move = *it;
+		move = moves.movs[i];
 		if (timeShouldStop())
 		{
-			liberarListaMovs(moves);
 			return 0;
 		}
-		boardMakeMove(nega->board, move);
+		boardMakeMove(nega->board, &move);
 		if (!boardIsValid(nega->board))
 		{
 			//  this.tabuleiro.print();
-			boardUnmakeMove(nega->board, move);
+			boardUnmakeMove(nega->board, &move);
 		}
 		else
 		{
@@ -134,10 +134,10 @@ int negaquies(NegaData * nega, int alfa, int beta, int ply, int depth)
 				//                            chaveLocal = 0;
 #endif
 
-				boardUnmakeMove(nega->board, move);
+				boardUnmakeMove(nega->board, &move);
 				break;
 			}
-			boardUnmakeMove(nega->board, move);
+			boardUnmakeMove(nega->board, &move);
 #if DEBUG
 			if (chaveLocal != tabuleiro.getChave())
 			{
@@ -151,16 +151,13 @@ int negaquies(NegaData * nega, int alfa, int beta, int ply, int depth)
 	}
 	if ((check) && (!moveu))
 	{
-		liberarListaMovs(moves);
 		return -(CHECKMATE - depth);
 	}
 
 	else if (!moveu)
 	{
-		liberarListaMovs(moves);
 		return avaliar(nega->board);
 	}
-	liberarListaMovs(moves);
 	return alfa;
 }
 
@@ -171,9 +168,9 @@ int negamax(NegaData * nega, int alpha, int beta, int ply, int depth)
 	int alfaOriginal = alpha;
 	int valor;
 	int melhorValor;
-	Move * melhorMov = 0;
-	std::list<Move*> * moves = new std::list<Move*>();
-	std::list<Move*> *atrasados = new std::list<Move*>();
+	Move melhorMov;
+	ListaMovs moves;
+	ListaMovs atrasados;
 	unsigned long long moveHash = 0;
 	bool check;
 	bool visitado = false;
@@ -182,8 +179,6 @@ int negamax(NegaData * nega, int alpha, int beta, int ply, int depth)
 
 	if (timeShouldStop())
 	{
-		delete atrasados;
-		delete moves;
 		return 0;
 	}
 
@@ -198,8 +193,8 @@ int negamax(NegaData * nega, int alpha, int beta, int ply, int depth)
 		hits++;
 		if (depth == 0)
 		{
-			melhorMov = new Move(retornoTabela.move);
-			nega->move = melhorMov;
+			melhorMov = retornoTabela.move;
+			nega->move = new Move(melhorMov);
 		}
 		if (retornoTabela.tipo == SCORE_EXATO)
 		{
@@ -216,21 +211,19 @@ int negamax(NegaData * nega, int alpha, int beta, int ply, int depth)
 		}
 		if (alpha > beta)
 		{
-			delete atrasados;
-			delete moves;
 			return retornoTabela.score;
 		}
 		if (retornoTabela.move.tipo != MOVNENHUM)
 		{
 			retornoTabela.move.score = SCORE_MOVE_HASH;
-			moves->push_front(new Move(retornoTabela.move));
+			listAdd(moves, retornoTabela.move);
 			moveHash = transp->moveHash(&retornoTabela.move);
 		}
 	}
 	else if (retornoTabela.move.tipo != MOVNENHUM)
 	{
 		retornoTabela.move.score = SCORE_MOVE_HASH;
-		moves->push_front(new Move(retornoTabela.move));
+		listAdd(moves, retornoTabela.move);
 		moveHash = transp->moveHash(&retornoTabela.move);
 	}
 	valor = -99999999;
@@ -242,45 +235,43 @@ int negamax(NegaData * nega, int alpha, int beta, int ply, int depth)
 	//                return avaliador.avaliar(tabuleiro);
 
 	boardGerarMovimentos(nega->board, moves, false);
-	moves->sort(compareMoves);
+	listSort(moves);
 
 
 	do
 	{
 		if (timeShouldStop())
 			break;
-		if (atrasados->size() != 0)
+		if (atrasados.size != 0)
 		{
-			liberarListaMovs(moves);
-			moves = new std::list<Move*>();
-
-			while (atrasados->size() > 0)
+			listClear(moves);
+			for (int i = 0; i < atrasados.size;i++)
 			{
-				moves->push_back(atrasados->back());
-				atrasados->pop_back();
+				listAdd(moves, atrasados.movs[i]);
 			}
+			listClear(atrasados);
 		}
-		std::list<Move*>::iterator it;
-		Move * move;
-		for (it = moves->begin(); it != moves->end();++it)
+		Move move;
+		for (int i=0;i<moves.size; i++)
 		{
-			move = *it;
-			if ((visitado) && (moveHash == transp->moveHash(move)))
+			move = moves.movs[i];
+			if ((visitado) && (moveHash == transp->moveHash(&move)))
 				continue;
 
 			if (timeShouldStop())
 				break;
-			if ((!transp->verificaSeBuscado(nega->id, chaveLocal, transp->moveHash(move), ply)))
-			{
-				atrasados->push_back(move);
-				continue;
-			}
+			if (depth==0)
+				if ((!transp->verificaSeBuscado(nega->id, chaveLocal, transp->moveHash(&move), ply)))
+				{
+					listAdd(atrasados, move);
+					continue;
+				}
 
-			boardMakeMove(nega->board, move);
+			boardMakeMove(nega->board, &move);
 			//tabuleiro.print();
 			if (!boardIsValid(nega->board))
 			{
-				boardUnmakeMove(nega->board, move);
+				boardUnmakeMove(nega->board, &move);
 				transp->retiraMov(nega->id, ply);
 			}
 			else
@@ -293,13 +284,14 @@ int negamax(NegaData * nega, int alpha, int beta, int ply, int depth)
 				{
 					melhorMov = move;
 					melhorValor = valor;
+
 				}
 				if (valor > alpha)
 					alpha = valor;
 				if (alpha > beta)
 				{
 
-					boardUnmakeMove(nega->board, move);
+					boardUnmakeMove(nega->board, &move);
 					transp->retiraMov(nega->id, ply);
 
 					if (chaveLocal != boardGetChave(nega->board))
@@ -308,7 +300,7 @@ int negamax(NegaData * nega, int alpha, int beta, int ply, int depth)
 					}
 					break;
 				}
-				boardUnmakeMove(nega->board, move);
+				boardUnmakeMove(nega->board, &move);
 				transp->retiraMov(nega->id, ply);
 				// if (chaveLocal != tabuleiro.getChave())
 				// {
@@ -316,15 +308,14 @@ int negamax(NegaData * nega, int alpha, int beta, int ply, int depth)
 				//     move.print();
 				// }
 			}
-			visitado = visitado || transp->moveHash(move) == moveHash;
+			visitado = visitado || transp->moveHash(&move) == moveHash;
 		}
-	} while (atrasados->size() != 0);
+	} while (atrasados.size != 0);
 
 
-	if (melhorMov == 0)
+	if (melhorMov.tipo == MOVNENHUM)
 	{
-		liberarListaMovs(moves);
-		delete atrasados;
+		
 		if (check)
 		{
 			return -(CHECKMATE - depth);
@@ -337,9 +328,9 @@ int negamax(NegaData * nega, int alpha, int beta, int ply, int depth)
 
 	if (depth == 0)
 	{
-		if (melhorMov != 0)
+		if (melhorMov.tipo!=MOVNENHUM)
 		{
-			nega->move = new Move(*melhorMov);
+			nega->move = new Move(melhorMov);
 		}
 	}
 	if (check)
@@ -349,7 +340,7 @@ int negamax(NegaData * nega, int alpha, int beta, int ply, int depth)
 	{
 
 		TranspItem itemT;
-		itemT.move = *melhorMov;
+		itemT.move = melhorMov;
 		itemT.idade = nega->age;
 		itemT.score = melhorValor;
 		itemT.chave = chaveLocal;
@@ -363,8 +354,6 @@ int negamax(NegaData * nega, int alpha, int beta, int ply, int depth)
 			itemT.tipo = SCORE_EXATO;
 		transp->armazenar(itemT);
 	}
-	liberarListaMovs(moves);
-	delete atrasados;
 	return melhorValor;
 
 }

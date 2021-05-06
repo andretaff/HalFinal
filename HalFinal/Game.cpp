@@ -67,8 +67,7 @@ void Game::makeHumanMoves(std::string moves)
 	Move movimento;
 	int pos;
 	bool achou;
-	std::list<Move *> * movel;
-	std::list<Move *>::iterator it;
+	ListaMovs movel;
 	std::string move1, move2;
 
 	trim(moves);
@@ -83,11 +82,12 @@ void Game::makeHumanMoves(std::string moves)
 		moves = moves.substr(move.length(), moves.length() - move.length());
 		trim(moves);
 		trim(move);
-		movel = new std::list<Move*>();
 		boardGerarMovimentos(tabuleiro, movel, false);
 		achou = false;
-		for (it = movel->begin(); it != movel->end(); ++it) {
-			movimento = **it;
+
+		for (int i= 0; i< movel.size; i++)
+		{
+			movimento = movel.movs[i];
 			move2 = movimento.ToAlgebra();
 			caps(move2);
 			if (move1 == move2)
@@ -101,6 +101,5 @@ void Game::makeHumanMoves(std::string moves)
 		{
 			throw std::exception("Movimento não encontrado");
 		}
-		liberarListaMovs(movel);
 	}
 }

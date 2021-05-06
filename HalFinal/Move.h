@@ -42,6 +42,6 @@ struct Move
 	std::string ToAlgebra();
 };
 
-bool compareMoves(Move * move1, Move * move2);
+bool compareMoves(const Move move1, const Move move2);
 
 

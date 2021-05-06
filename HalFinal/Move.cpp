@@ -70,7 +70,7 @@ std::string Move::ToAlgebra()
 	return sb;
 }
 
-bool compareMoves(Move * move1, Move * move2)
+bool compareMoves(const Move move1, const Move move2)
 {
-	return move1->score>move2->score;
+	return move1.score>move2.score;
 }

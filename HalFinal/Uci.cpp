@@ -126,7 +126,9 @@ void ucirun()
 		}
 		if (filaout->size() > 0)
 		{
-			std::cout << filaout->pop_front().c_str()<<std::endl;
+			std::string top = filaout->pop_front();
+			arqsaida << "comout " << top.c_str() << std::endl;
+			std::cout << top.c_str()<<std::endl;
 		}
 	}
 	

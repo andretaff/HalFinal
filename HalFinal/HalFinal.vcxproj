@@ -157,6 +157,7 @@
     <ClInclude Include="BoardConstants.h" />
     <ClInclude Include="DNA.h" />
     <ClInclude Include="FEN.h" />
+    <ClInclude Include="FilaMovs.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="helpers.h" />
     <ClInclude Include="SharedQueue.h" />
@@ -175,6 +176,7 @@
     <ClCompile Include="BoardConstants.cpp" />
     <ClCompile Include="DNA.cpp" />
     <ClCompile Include="FEN.cpp" />
+    <ClCompile Include="FilaMovs.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="HalFinal.cpp" />
     <ClCompile Include="helpers.cpp" />

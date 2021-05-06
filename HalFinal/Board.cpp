@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "Board.h"
-#include <list>
 #include  <algorithm>
 #include <iostream>
 
@@ -495,7 +494,7 @@ tipoPeca boardGetPecaPosicao(Board * board, unsigned long long posicao, int cor)
 	return NENHUMA;
 }
 
-void boardGenMovsTorre(Board * board, tipoPeca peca, bool capturas, std::list<Move*> * moves, bool quiet = false)
+void boardGenMovsTorre(Board * board, tipoPeca peca, bool capturas, ListaMovs & moves, bool quiet = false)
 {
 
 	unsigned long long torres = board->bbs[(int)peca + board->corMover];
@@ -507,7 +506,7 @@ void boardGenMovsTorre(Board * board, tipoPeca peca, bool capturas, std::list<Mo
 	unsigned long long inimigas = board->bbs[PECAS + 1 - board->corMover];
 	unsigned long long todas = amigas | inimigas;
 	unsigned long long occ;
-	Move * move;
+	Move move;
 	unsigned int index;
 
 	if (capturas)
@@ -528,17 +527,15 @@ void boardGenMovsTorre(Board * board, tipoPeca peca, bool capturas, std::list<Mo
 				pTo = (unsigned long long)((long long)movs & -(long long)movs);
 				iTo = blackMagicIndex(pTo);
 				pecaAtacada = boardGetPecaPosicao(board,pTo, 1 - board->corMover);
-				move = new Move(pFrom, pTo, MCAP,
+				move = Move(pFrom, pTo, MCAP,
 					(tipoPeca)((int)peca + board->corMover),
 					pecaAtacada,
 					iFrom,
 					iTo
 				);
-				move->score = boardSee(board,iTo, pTo, pecaAtacada, iFrom, pFrom, (tipoPeca)((int)peca + board->corMover));
-				if ((!quiet) || (move->score > 0))
-					moves->push_back(move);
-				else
-					delete move;
+				move.score = boardSee(board,iTo, pTo, pecaAtacada, iFrom, pFrom, (tipoPeca)((int)peca + board->corMover));
+				if ((!quiet) || (move.score >= 0))
+					listAdd(moves, move);
 
 				movs = movs & (movs - 1);
 			}
@@ -563,13 +560,13 @@ void boardGenMovsTorre(Board * board, tipoPeca peca, bool capturas, std::list<Mo
 			{
 				pTo = (unsigned long long)((long long)movs & -(long long)movs);
 				iTo = blackMagicIndex(pTo);
-				move = new Move(pFrom, pTo, MNORMAL,
+				move = Move(pFrom, pTo, MNORMAL,
 					(tipoPeca)((int)peca + board->corMover),
 					NENHUMA,
 					iFrom,
 					iTo
 				);
-				moves->push_back(move);
+				listAdd(moves, move);
 				movs = movs & (movs - 1);
 			}
 			torres = torres & (torres - 1);
@@ -578,9 +575,9 @@ void boardGenMovsTorre(Board * board, tipoPeca peca, bool capturas, std::list<Mo
 }
 
 
-void boardGenMovsPeao(Board * board, bool capturas, std::list<Move*> * moves, bool quiet = false)
+void boardGenMovsPeao(Board * board, bool capturas, ListaMovs & moves, bool quiet = false)
 {
-	Move * move;
+	Move move;
 	if (capturas)
 	{
 		unsigned long long peoes = board->bbs[(int)PEAO + board->corMover];
@@ -615,17 +612,14 @@ void boardGenMovsPeao(Board * board, bool capturas, std::list<Move*> * moves, bo
 				pAtacada = boardGetPecaPosicao(board, pTo, 1 - board->corMover);
 				for (j = (int)RAINHA + board->corMover; j > (int)PP; j -= 2)
 				{
-					move = new Move(pFrom, pTo, (tipoMovimento)((int)MPROMOCAP + j),
+					move = Move(pFrom, pTo, (tipoMovimento)((int)MPROMOCAP + j),
 						(tipoPeca)((int)PEAO + board->corMover),
 						pAtacada,
 						iFrom,
 						iTo);
-					move->score = boardSee(board,iTo, pTo, pAtacada, iFrom, pFrom, (tipoPeca)j);
-					if ((!quiet) || (move->score > 0))
-						moves->push_back(move);
-					else
-						delete move;
-
+					move.score = boardSee(board,iTo, pTo, pAtacada, iFrom, pFrom, (tipoPeca)j);
+					if ((!quiet) || (move.score >= 0))
+						listAdd(moves, move);
 				}
 
 				promos = promos & (promos - 1);
@@ -637,12 +631,12 @@ void boardGenMovsPeao(Board * board, bool capturas, std::list<Move*> * moves, bo
 				iTo = blackMagicIndex(pTo);
 				if (iTo == board->enPassant)
 				{
-					move = new Move(pFrom, pTo, MCAPENPASSANT,
+					move = Move(pFrom, pTo, MCAPENPASSANT,
 						(tipoPeca)((int)PEAO + board->corMover),
 						(tipoPeca)((int)PEAO + 1 - board->corMover),
 						iFrom,
 						iTo);
-					move->score = boardSee(board, iTo, pTo, (tipoPeca)((int)PEAO + board->corMover), iFrom, pFrom, (tipoPeca)((int)PEAO + board->corMover));
+					move.score = boardSee(board, iTo, pTo, (tipoPeca)((int)PEAO + board->corMover), iFrom, pFrom, (tipoPeca)((int)PEAO + board->corMover));
 
 				}
 				else
@@ -650,17 +644,15 @@ void boardGenMovsPeao(Board * board, bool capturas, std::list<Move*> * moves, bo
 					pAtacada = boardGetPecaPosicao(board, pTo, 1 - board->corMover);
 					// if (pAtacada == tipoPeca.NENHUMA)
 					//     this.print();
-					move = new Move(pFrom, pTo, MCAP,
+					move = Move(pFrom, pTo, MCAP,
 						(tipoPeca)((int)PEAO + board->corMover),
 						pAtacada,
 						iFrom,
 						iTo);
-					move->score = boardSee(board,iTo, pTo, pAtacada, iFrom, pFrom, (tipoPeca)((int)PEAO + board->corMover));
+					move.score = boardSee(board,iTo, pTo, pAtacada, iFrom, pFrom, (tipoPeca)((int)PEAO + board->corMover));
 				}
-				if ((!quiet) || (move->score > 0))
-					moves->push_back(move);
-				else
-					delete move;
+				if ((!quiet) || (move.score >= 0))
+					listAdd(moves, move);
 				ataques = ataques & (ataques - 1);
 			}
 			peoes = peoes & (peoes - 1);
@@ -689,14 +681,13 @@ void boardGenMovsPeao(Board * board, bool capturas, std::list<Move*> * moves, bo
 				iTo = iFrom - 8;
 				for (j = (int)RAINHA + board->corMover; j > (int)PP; j -= 2)
 				{
-					move = new Move(pFrom, pFrom >> 8, (tipoMovimento)((int)MPROMO + j),
+					move = Move(pFrom, pFrom >> 8, (tipoMovimento)((int)MPROMO + j),
 						(tipoPeca)((int)PEAO + board->corMover),
 						NENHUMA,
 						iFrom,
 						iTo);
-					move->score = j - (int)PEAO;
-					moves->push_back(move);
-
+					move.score = j - (int)PEAO;
+					listAdd(moves, move);
 				}
 				promos &= (promos - 1);
 			}
@@ -707,9 +698,9 @@ void boardGenMovsPeao(Board * board, bool capturas, std::list<Move*> * moves, bo
 				pFrom = (unsigned long long)(((long long)movsDuplos & -(long long)movsDuplos) << 16);
 				iFrom = blackMagicIndex(pFrom);
 				iTo = iFrom - 16;
-				move = new Move(pFrom, pFrom >> 16, MDUPLO, PEAO,
+				move = Move(pFrom, pFrom >> 16, MDUPLO, PEAO,
 					NENHUMA, iFrom, iTo);
-				moves->push_back(move);
+				listAdd(moves, move);
 				movsDuplos = movsDuplos & (movsDuplos - 1);
 			}
 
@@ -718,9 +709,9 @@ void boardGenMovsPeao(Board * board, bool capturas, std::list<Move*> * moves, bo
 				pFrom = (unsigned long long)(((long long)movs & -(long long)movs) << 8);
 				iFrom = blackMagicIndex(pFrom);
 				iTo = iFrom - 8;
-				move = new Move(pFrom, pFrom >> 8, MNORMAL, PEAO,
+				move = Move(pFrom, pFrom >> 8, MNORMAL, PEAO,
 					NENHUMA, iFrom, iTo);
-				moves->push_back(move);
+				listAdd(moves, move);
 				movs = movs & (movs - 1);
 			}
 		}
@@ -744,12 +735,12 @@ void boardGenMovsPeao(Board * board, bool capturas, std::list<Move*> * moves, bo
 				iTo = iFrom + 8;
 				for (j = (int)RAINHA + board->corMover; j > (int)PP; j -= 2)
 				{
-					move = new Move(pFrom, pFrom << 8, (tipoMovimento)((int)MPROMO + j),
+					move = Move(pFrom, pFrom << 8, (tipoMovimento)((int)MPROMO + j),
 						(tipoPeca)((int)PEAO + board->corMover),
 						NENHUMA,
 						iFrom,
 						iTo);
-					moves->push_back(move);
+					listAdd(moves, move);
 
 				}
 				promos &= (promos - 1);
@@ -760,9 +751,9 @@ void boardGenMovsPeao(Board * board, bool capturas, std::list<Move*> * moves, bo
 				pFrom = (unsigned long long)((long long)movsDuplos & -(long long)movsDuplos) >> 16;
 				iFrom = blackMagicIndex(pFrom);
 				iTo = iFrom + 16;
-				move = new Move(pFrom, pFrom << 16, MDUPLO, PP,
+				move = Move(pFrom, pFrom << 16, MDUPLO, PP,
 					NENHUMA, iFrom, iTo);
-				moves->push_back(move);
+				listAdd(moves, move);
 				movsDuplos = movsDuplos & (movsDuplos - 1);
 			}
 
@@ -771,16 +762,16 @@ void boardGenMovsPeao(Board * board, bool capturas, std::list<Move*> * moves, bo
 				pFrom = (unsigned long long)((long long)movs & -(long long)movs) >> 8;
 				iFrom = blackMagicIndex(pFrom);
 				iTo = iFrom + 8;
-				move = new Move(pFrom, pFrom << 8, MNORMAL, PP,
+				move = Move(pFrom, pFrom << 8, MNORMAL, PP,
 					NENHUMA, iFrom, iTo);
-				moves->push_back(move);
+				listAdd(moves, move);
 				movs = movs & (movs - 1);
 			}
 		}
 	}
 }
 
-void boardGenMovsCavalo(Board * board, bool capturas, std::list<Move *> *moves, bool quiet = false)
+void boardGenMovsCavalo(Board * board, bool capturas, ListaMovs & moves, bool quiet = false)
 {
 	unsigned long long cavalos = board->bbs[(int)CAVALO + board->corMover];
 	unsigned long long movs;
@@ -790,7 +781,7 @@ void boardGenMovsCavalo(Board * board, bool capturas, std::list<Move *> *moves, 
 	unsigned long long amigas = board->bbs[PECAS + board->corMover];
 	unsigned long long  inimigas = board->bbs[PECAS + 1 - board->corMover];
 	unsigned long long  todas = amigas | inimigas;
-	Move * move;
+	Move move;
 
 	if (capturas)
 	{
@@ -804,17 +795,15 @@ void boardGenMovsCavalo(Board * board, bool capturas, std::list<Move *> *moves, 
 				pTo = (unsigned long long)((long long)movs & -(long long)movs);
 				iTo = blackMagicIndex(pTo);
 				pecaAtacada = boardGetPecaPosicao(board,pTo, 1 - board->corMover);
-				move = new Move(pFrom, pTo, MCAP,
+				move = Move(pFrom, pTo, MCAP,
 					(tipoPeca)((int)CAVALO + board->corMover),
 					pecaAtacada,
 					iFrom,
 					iTo
 				);
-				move->score = boardSee(board,iTo, pTo, pecaAtacada, iFrom, pFrom, (tipoPeca)((int)CAVALO + board->corMover));
-				if ((!quiet) || (move->score > 0))
-					moves->push_back(move);
-				else 
-					delete move;
+				move.score = boardSee(board,iTo, pTo, pecaAtacada, iFrom, pFrom, (tipoPeca)((int)CAVALO + board->corMover));
+				if ((!quiet) || (move.score >= 0))
+					listAdd(moves, move);
 				movs = movs & (movs - 1);
 			}
 			cavalos = cavalos & (cavalos - 1);
@@ -831,13 +820,13 @@ void boardGenMovsCavalo(Board * board, bool capturas, std::list<Move *> *moves, 
 			{
 				pTo = (unsigned long long)((long long)movs & -(long long)movs);
 				iTo = blackMagicIndex(pTo);
-				move = new Move(pFrom, pTo, MNORMAL,
+				move = Move(pFrom, pTo, MNORMAL,
 					(tipoPeca)((int)CAVALO + board->corMover),
 					NENHUMA,
 					iFrom,
 					iTo
 				);
-				moves->push_back(move);
+				listAdd(moves, move);
 				movs = movs & (movs - 1);
 			}
 			cavalos = cavalos & (cavalos - 1);
@@ -847,7 +836,7 @@ void boardGenMovsCavalo(Board * board, bool capturas, std::list<Move *> *moves, 
 }
 
 
-void boardGenMovsBispo(Board * board, tipoPeca peca, bool capturas, std::list<Move*> * moves, bool quiet = false)
+void boardGenMovsBispo(Board * board, tipoPeca peca, bool capturas, ListaMovs & moves, bool quiet = false)
 {
 
 	unsigned long long bispos = board->bbs[(int)peca + board->corMover];
@@ -859,7 +848,7 @@ void boardGenMovsBispo(Board * board, tipoPeca peca, bool capturas, std::list<Mo
 	unsigned long long inimigas = board->bbs[PECAS + 1 - board->corMover];
 	unsigned long long todas = amigas | inimigas;
 	unsigned long long occ;
-	Move * move;
+	Move move;
 	unsigned int index;
 
 	if (capturas)
@@ -880,17 +869,15 @@ void boardGenMovsBispo(Board * board, tipoPeca peca, bool capturas, std::list<Mo
 				pTo = (unsigned long long)((long long)movs & -(long long)movs);
 				iTo = blackMagicIndex(pTo);
 				pecaAtacada = boardGetPecaPosicao(board,pTo, 1 - board->corMover);
-				move = new Move(pFrom, pTo, MCAP,
+				move = Move(pFrom, pTo, MCAP,
 					(tipoPeca)((int)peca + board->corMover),
 					pecaAtacada,
 					iFrom,
 					iTo
 				);
-				move->score = boardSee(board,iTo, pTo, pecaAtacada, iFrom, pFrom, (tipoPeca)((int)peca + board->corMover));
-				if ((!quiet) || (move->score > 0))
-					moves->push_back(move);
-				else
-					delete move;
+				move.score = boardSee(board,iTo, pTo, pecaAtacada, iFrom, pFrom, (tipoPeca)((int)peca + board->corMover));
+				if ((!quiet) || (move.score > 0))
+					listAdd(moves, move);
 				movs = movs & (movs - 1);
 			}
 			bispos = bispos & (bispos - 1);
@@ -914,13 +901,13 @@ void boardGenMovsBispo(Board * board, tipoPeca peca, bool capturas, std::list<Mo
 			{
 				pTo = (unsigned long long)((long long)movs & -(long long)movs);
 				iTo = blackMagicIndex(pTo);
-				move = new Move(pFrom, pTo, MNORMAL,
+				move = Move(pFrom, pTo, MNORMAL,
 					(tipoPeca)((int)peca + board->corMover),
 					NENHUMA,
 					iFrom,
 					iTo
 				);
-				moves->push_back(move);
+				listAdd(moves, move);
 				movs = movs & (movs - 1);
 			}
 			bispos = bispos & (bispos - 1);
@@ -928,7 +915,7 @@ void boardGenMovsBispo(Board * board, tipoPeca peca, bool capturas, std::list<Mo
 	}
 }
 
-void boardGenMovsRei(Board * board, bool capturas, std::list<Move*> * moves)
+void boardGenMovsRei(Board * board, bool capturas, ListaMovs & moves)
 {
 	unsigned long long reis = board->bbs[(int)REI + board->corMover];
 	unsigned long long movs;
@@ -938,7 +925,7 @@ void boardGenMovsRei(Board * board, bool capturas, std::list<Move*> * moves)
 	unsigned long long amigas = board->bbs[PECAS + board->corMover];
 	unsigned long long inimigas = board->bbs[PECAS + 1 - board->corMover];
 	unsigned long long todas = amigas | inimigas;
-	Move * move;
+	Move move;
 
 	if (capturas)
 	{
@@ -949,13 +936,13 @@ void boardGenMovsRei(Board * board, bool capturas, std::list<Move*> * moves)
 			pTo = (unsigned long long)((long long)movs & -(long long)movs);
 			iTo =blackMagicIndex(pTo);
 			pecaAtacada = boardGetPecaPosicao(board,pTo, 1 - board->corMover);
-			move = new Move(reis, pTo, MCAP,
+			move = Move(reis, pTo, MCAP,
 				(tipoPeca)((int)REI + board->corMover),
 				pecaAtacada,
 				iFrom,
 				iTo
 			);
-			moves->push_back(move);
+			listAdd(moves, move);
 			movs = movs & (movs - 1);
 		}
 	}
@@ -967,13 +954,13 @@ void boardGenMovsRei(Board * board, bool capturas, std::list<Move*> * moves)
 		{
 			pTo = (unsigned long long)((long long)movs & -(long long)movs);
 			iTo = blackMagicIndex(pTo);
-			move = new Move(reis, pTo, MNORMAL,
+			move = Move(reis, pTo, MNORMAL,
 				(tipoPeca)((int)REI + board->corMover),
 				NENHUMA,
 				iFrom,
 				iTo
 			);
-			moves->push_back(move);
+			listAdd(moves, move);
 			movs = movs & (movs - 1);
 		}
 		if ((board->corMover == 0) && (((board->potencialRoque & (ROQUE_RAINHA_BRANCO | ROQUE_REI_BRANCO)) != 0)))
@@ -985,11 +972,11 @@ void boardGenMovsRei(Board * board, bool capturas, std::list<Move*> * moves)
 					&& (!boardCasaAtacada(board,I61, 1))
 					&& (!boardCasaAtacada(board,I62, 1)))
 				{
-					move = new Move(reis, I63,
+					move = Move(reis, I63,
 						MROQUEK,
 						REI, NENHUMA,
 						60, 63);
-					moves->push_back(move);
+					listAdd(moves, move);
 				}
 			}
 			if ((board->potencialRoque & ROQUE_RAINHA_BRANCO) != 0)
@@ -1000,11 +987,11 @@ void boardGenMovsRei(Board * board, bool capturas, std::list<Move*> * moves)
 					&& (!boardCasaAtacada(board,I58, 1))
 					&& (!boardCasaAtacada(board,I59, 1)))
 				{
-					move = new Move(reis, I56,
+					move = Move(reis, I56,
 						MROQUEQ,
 						REI, NENHUMA,
 						60, 56);
-					moves->push_back(move);
+					listAdd(moves, move);
 				}
 
 			}
@@ -1018,11 +1005,11 @@ void boardGenMovsRei(Board * board, bool capturas, std::list<Move*> * moves)
 					&& (!boardCasaAtacada(board, I05, 0))
 					&& (!boardCasaAtacada(board,I06, 0)))
 				{
-					move = new Move(reis, I07,
+					move = Move(reis, I07,
 						MROQUEK,
 						KP, NENHUMA,
 						4, 7);
-					moves->push_back(move);
+					listAdd(moves, move);
 				}
 			}
 			if ((board->potencialRoque & ROQUE_RAINHA_PRETO) != 0)
@@ -1033,11 +1020,11 @@ void boardGenMovsRei(Board * board, bool capturas, std::list<Move*> * moves)
 					&& (!boardCasaAtacada(board,I02, 0))
 					&& (!boardCasaAtacada(board,I03, 0)))
 				{
-					move = new Move(reis, I56,
+					move = Move(reis, I56,
 						MROQUEQ,
 						KP, NENHUMA,
 						4, 0);
-					moves->push_back(move);
+					listAdd(moves, move);
 				}
 
 			}
@@ -1048,7 +1035,7 @@ void boardGenMovsRei(Board * board, bool capturas, std::list<Move*> * moves)
 }
 
 
-void boardGerarMovimentos(Board * board, std::list<Move*> * moves, bool quiet)
+void boardGerarMovimentos(Board * board, ListaMovs & moves, bool quiet)
 {
 	boardGenMovsPeao(board,true, moves, quiet);
 	boardGenMovsCavalo(board,true, moves, quiet);
@@ -1069,14 +1056,6 @@ void boardGerarMovimentos(Board * board, std::list<Move*> * moves, bool quiet)
 		boardGenMovsRei(board, false, moves);
 	}
 }
-
-void liberarListaMovs(std::list<Move*> * moves) {
-	std::list<Move*>::iterator it;
-	for (it = moves->begin(); it != moves->end(); ++it)
-		delete *it;
-	delete moves;
-}
-
 
 unsigned long long boardGetChave(Board * board)
 {

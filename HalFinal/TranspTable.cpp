@@ -104,7 +104,9 @@ bool TranspTable::verificaSeBuscado(int threadId, unsigned long long hash,unsign
 
 void TranspTable::retiraMov(int threadId,int ply)
 {
+	lockMove.lock();
 	this->movsBuscados[threadId][ply]->hash = 0;
+	lockMove.unlock();
 }
 
 void TranspTable::clear()
@@ -150,6 +152,7 @@ void TranspTable::armazenar(TranspItem item)
 	{
 		*transptable[pos] = item;
 	}
+
 	this->mtx[posLock]->unlock();
 }
 

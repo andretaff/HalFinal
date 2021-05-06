@@ -63,6 +63,9 @@
     <ClInclude Include="NegaClass.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="FilaMovs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -114,6 +117,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="NegaClass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FilaMovs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
