@@ -43,6 +43,7 @@ int negaquies(NegaData * nega, int alfa, int beta, int ply, int depth)
 	unsigned long long chaveLocal = boardGetChave(nega->board);
 	bool moveu = false;
 	Move move;
+	moves.size = 0;
 
 	if (timeShouldStop())
 

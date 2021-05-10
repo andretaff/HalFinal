@@ -72,7 +72,7 @@ unsigned long long  boardAtaquesACasa(Board * board, unsigned long long bb, int 
 	index = index + (unsigned int)occ;
 
 	ataques |= tabela[index] & (board->bbs[(int)TORRE] | board->bbs[(int)TP]
-		| board->bbs[(int)RAINHA] | board->bbs[(int)KP]);
+ 		| board->bbs[(int)RAINHA] | board->bbs[(int)RP]);
 
 	index = bispo[iFrom].posicao;
 	occ = bispo[iFrom].mascara | todas;
@@ -81,7 +81,7 @@ unsigned long long  boardAtaquesACasa(Board * board, unsigned long long bb, int 
 	index = index + (unsigned int)occ;
 
 	ataques |= tabela[index] & (board->bbs[(int)BISPO] | board->bbs[(int)BP]
-		| board->bbs[(int)RAINHA] | board->bbs[(int)KP]);
+		| board->bbs[(int)RAINHA] | board->bbs[(int)RP]);
 
 	return ataques;
 
@@ -134,7 +134,7 @@ unsigned long long  boardRecuperarAtacanteMaisBarato(Board * board, unsigned lon
 	return 0;
 }
 
-unsigned long long boardAtaquesRaioX(Board * board, unsigned long long ocupacao, int iFrom)
+unsigned long long boardAtaquesRaioX(Board * board, unsigned long long ocupacao, int iFrom,unsigned long long removidos)
 {
 	unsigned int index;
 	unsigned long long occ;
@@ -143,16 +143,16 @@ unsigned long long boardAtaquesRaioX(Board * board, unsigned long long ocupacao,
 	occ = torre[iFrom].mascara | ocupacao;
 	occ *= torre[iFrom].fator;
 	occ >>= (64 - 12);
-	index = index + (unsigned int )occ;
+	index = index + (unsigned int)occ;
 
 	unsigned long long xRays = ocupacao & board->bbs[(int)TORRE] | board->bbs[(int)RAINHA] |
 		board->bbs[(int)TP] | board->bbs[(int)RP];
 
 	resposta = (tabela[index] & (xRays));
 
-	index = torre[iFrom].posicao;
-	occ = torre[iFrom].mascara | ocupacao;
-	occ *= torre[iFrom].fator;
+	index = bispo[iFrom].posicao;
+	occ = bispo[iFrom].mascara | ocupacao;
+	occ *= bispo[iFrom].fator;
 	occ >>= (64 - 9);
 	index = index + (unsigned int)occ;
 	xRays = ocupacao & board->bbs[(int)BISPO] | board->bbs[(int)RAINHA] |
@@ -160,7 +160,7 @@ unsigned long long boardAtaquesRaioX(Board * board, unsigned long long ocupacao,
 
 	resposta |= (tabela[index] & xRays);
 
-	return resposta;
+	return resposta & (~removidos);
 
 }
 
@@ -176,20 +176,22 @@ int boardSee(Board * board, int toIndex, unsigned long long toBB, tipoPeca alvo,
 
 	unsigned long long occ = board->bbs[(int)PECAS] | board->bbs[(int)PECAS + 1];
 	unsigned long long ataques = boardAtaquesACasa(board,toBB, toIndex);
-	//this.print();
+	unsigned long long removidos =0;
+	//boardPrint(board);
+
 	ganho[d] = vPecas[(int)alvo];
 	do
 	{
 		d++;
 		ganho[d] = vPecas[(int)peca] - ganho[d - 1];
 		if (std::max(-ganho[d - 1], ganho[d]) < 0) break;
-		ataques ^= fromBB;
-		occ ^= fromBB;
+		ataques &= ~fromBB;
+		occ &= ~fromBB;
+		removidos |= fromBB;
 		if ((fromBB & ataquesPossiveis) != 0)
-			ataques |= boardAtaquesRaioX(board,occ, fromIndex);
+			ataques |= boardAtaquesRaioX(board,occ, toIndex,removidos);
 		ataquesPossiveis &= ~fromBB;
 		fromBB = boardRecuperarAtacanteMaisBarato(board, ataques, 1 - cor, &peca);
-		fromIndex = blackMagicIndex(fromBB);
 		cor = 1 - cor;
 	} while (fromBB > 0);
 	while ((--d) > 0)
