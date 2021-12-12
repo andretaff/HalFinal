@@ -55,6 +55,8 @@ Move * NegaClass::go(Board board)
 	SharedQueue<class NegaResult> results; 
 	bool bAchou = false;
 	std::deque<std::thread *>::iterator it;
+	Board * boards[MAXTHREADS];
+	int i;
 	age++;
 	pararThreads = false;
 
@@ -64,29 +66,34 @@ Move * NegaClass::go(Board board)
 		profundidade++;
 		results.clear();
 		
-		for (int i = 0; i < numberOfthreads;i++)
+		for (i = 0; i < numberOfthreads;i++)
 		{
-			threads.push_back(new std::thread(negarun, i, &board, &results, profundidade, age));
+			boards[i] = new Board(board);
+
+			//std::this_thread::sleep_for(std::chrono::milliseconds(25));
+			threads.push_back(new std::thread(negarun, i, boards[i], &results, profundidade, age));
 		}
 		
 		
 		while ((!bAchou) && (!timeShouldStop()))
 		{
-			std::this_thread::sleep_for(std::chrono::milliseconds(5));
+			std::this_thread::sleep_for(std::chrono::milliseconds(10));
 			
 			if (!results.empty()) {
 				resultadoTemp = results.pop_front();
 				bAchou = true;
 				transp->reiniciarMovsBuscados();
 				pararThreads = true;
-				std::this_thread::sleep_for(std::chrono::milliseconds(5));
+				std::this_thread::sleep_for(std::chrono::milliseconds(100));
 				pararThreads = false;
 			}
 		}
+		i = 0;
 		for (it = threads.begin();it != threads.end();++it)
 		{
 			(*it)->join();
 			delete *it;
+			delete boards[i++];
 		}
 
 		threads.clear();

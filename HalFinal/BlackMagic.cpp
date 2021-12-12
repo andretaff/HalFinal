@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "BlackMagic.h"
 #include <math.h>
+#include <iostream>
 #include "BoardConstants.h"
 
 int lsb_table[64] = { 63, 30, 3, 32, 59, 14, 11, 33, 60, 24, 50, 9, 55, 19, 21, 34, 61, 29, 2, 53, 51, 23, 41, 18, 56, 28, 1, 43, 46, 27, 0, 35, 62, 31, 58, 4, 5, 49, 54, 6, 15, 52, 12, 40, 7, 42, 45, 16, 25, 57, 48, 13, 10, 39, 8, 44, 20, 47, 38, 22, 17, 37, 36, 26 };
@@ -450,5 +451,31 @@ std::string blackMagicBBToString(unsigned long long bb)
 
 	return s;
 }
+
+void printBitBoard(unsigned long long bb)
+{
+	unsigned long long posicao = 1;
+	int index = 0;
+	std::string linha = "";
+	std::cout << linha << std::endl;
+	std::cout << linha << std::endl;
+	do
+	{
+			if ((bb & posicao) != 0)
+				linha += "X";
+			else
+				linha += " ";
+
+		if ((index + 1) % 8 == 0)
+		{
+			std::cout << linha << std::endl;
+			linha = "";
+		}
+		index++;
+		posicao <<= 1;
+	} while (index < 64);
+	std::cout << std::endl;
+}
+
 
 

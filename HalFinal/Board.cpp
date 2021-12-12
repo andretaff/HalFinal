@@ -98,7 +98,7 @@ void boardAddPeca(Board * board, unsigned long long posicao, tipoPeca peca, int 
 {
 	int cor = (int)peca % 2;
 	board->bbs[(int)peca] ^= posicao;
-	board->bbs[cor + PECAS] |= posicao;
+	board->bbs[cor + PECAS] ^= posicao;
 	board->vMat[cor] += vPecas[(int)peca];
 	if (peca < REI)
 		board->vPos[cor] += pPos[(int)peca][index];
@@ -109,7 +109,7 @@ void boardRemovePeca(Board * board, unsigned long long posicao, tipoPeca peca, i
 {
 	int cor = (int)peca % 2;
 	board->bbs[(int)peca] ^= posicao;
-	board->bbs[cor + PECAS] &= ~posicao;
+	board->bbs[cor + PECAS] ^= posicao;
 	board->vMat[cor] -= vPecas[(int)peca];
 	if (peca < REI)
 		board->vPos[cor] -= pPos[(int)peca][index];

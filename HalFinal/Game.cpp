@@ -61,6 +61,11 @@ void Game::start(int tipo, unsigned long long milisecs)
 	timer = new std::thread(timeRun);
 }
 
+void Game::printBoard()
+{
+	boardPrint(tabuleiro);
+}
+
 void Game::makeHumanMoves(std::string moves)
 {
 	std::string move;
@@ -73,6 +78,7 @@ void Game::makeHumanMoves(std::string moves)
 	trim(moves);
 	while (moves != "")
 	{
+		movel.size = 0;
 		pos = moves.find(" ");
 		if (pos == std::string::npos)
 			pos = moves.length();

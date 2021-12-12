@@ -16,6 +16,7 @@ enum tipoPeca
 	KP = 11,
 	NENHUMA = 15
 };
+//#define	DISABLETT
 
 	 const int todosBBs = 16;
 	 const int ATB = 14;
@@ -24,7 +25,7 @@ enum tipoPeca
 	 const std::string sPecas = "PpNnBbRrQqKk";
 
 	 const unsigned int MAXPLY = 15;
-	 const unsigned int MAXTHREADS = 1;
+	 const unsigned int MAXTHREADS = 4;
 	 const unsigned int MAXQUIES = 10;
 
 	 const int CHECKMATE = 999999;

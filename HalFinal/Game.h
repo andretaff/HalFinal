@@ -22,6 +22,7 @@ public:
 	void makeHumanMoves(std::string moves);
 	void stop();
 	void setFenPosition(std::string fenStr);
+	void printBoard();
 
 
 };

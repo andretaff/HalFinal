@@ -18,6 +18,8 @@ int blackMagicIndex(unsigned long long bb);
 unsigned long long blackMagicGetBBIndex(int indice);
 std::string blackMagicBBToString(unsigned long long bb);
 
+void printBitBoard(unsigned long long bb);
+
 
 extern magic bispo[64];
 extern magic torre[64];

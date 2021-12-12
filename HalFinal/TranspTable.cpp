@@ -36,9 +36,9 @@ TranspTable::TranspTable(unsigned long size)
 
 TranspTable::~TranspTable()
 {
-	for (int i = 0; i < size; i++)
+	for (unsigned int i = 0; i < size; i++)
 		delete transptable[i];
-	for (int i = 0; i < size / 1000; i++)
+	for (unsigned int i = 0; i < size / 1000; i++)
 		delete mtx[i];
 	delete transptable;
 	delete mtx;
@@ -165,6 +165,10 @@ bool TranspTable::recuperar(unsigned long long chave, int ply, unsigned int idad
 	this->mtx[posLock]->lock();
 	item = TranspItem(*(this->transptable[pos]));
 	this->mtx[posLock]->unlock();
+#ifdef DISABLETT
+	item.chave = 0;
+#endif
+
 	if (item.chave == 0)
 	{
 		retorno.chave = 0;
@@ -172,8 +176,8 @@ bool TranspTable::recuperar(unsigned long long chave, int ply, unsigned int idad
 		return false;
 	}
 	if ((chave == item.chave) &&
-		(ply <= item.ply) &&
-		(idade <= item.idade + 1))
+		(idade <= item.idade+1) &&
+		(ply <= item.ply))
 	{
 		retorno =item ;
 		ok = true;

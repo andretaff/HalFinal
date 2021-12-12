@@ -10,15 +10,15 @@ unsigned long hits;
 
 void negarun(int id, Board * board, SharedQueue<NegaResult>* results, int maxply, int age)
 {
-	int nota;
 	NegaResult result;
 	NegaData * nega = new NegaData();
 	nodes = 0;
 	hits = 0;
-	nega->board = new Board(*board);
+	nega->board = board;
 
 	//this.tabuleiro.print();
 	//Thread.Sleep(300);
+//	boardPrint(nega->board);
 	nega->id = id;
 	result.nota = negamax(nega, -99999999, +99999999, maxply, 0);
 	result.nodes = nodes;
@@ -46,12 +46,8 @@ int negaquies(NegaData * nega, int alfa, int beta, int ply, int depth)
 	moves.size = 0;
 
 	if (timeShouldStop())
-
 		return 0;
-
-
 	nodes++;
-
 
 	bool encontrouTabela = transp->recuperar(chaveLocal, 0, nega->age, retornoTabela);
 	if (encontrouTabela)
@@ -80,12 +76,16 @@ int negaquies(NegaData * nega, int alfa, int beta, int ply, int depth)
 
 	//nega->quiesNodes++;
 
+	alfa = avaliar(nega->board);
+	valor = alfa;
+	
 
-	if (ply == 0)
-	{
-		return avaliar(nega->board);
-	}
 	check = boardIsChecked(nega->board);
+
+	if ((!check) && ((ply == 0) || (alfa > beta)))
+	{
+		return alfa;
+	}
 
 	boardGerarMovimentos(nega->board, moves, !check);
 
@@ -139,6 +139,8 @@ int negaquies(NegaData * nega, int alfa, int beta, int ply, int depth)
 				break;
 			}
 			boardUnmakeMove(nega->board, &move);
+			if (boardGetChave(nega->board) != chaveLocal)
+				ply++;
 #if DEBUG
 			if (chaveLocal != tabuleiro.getChave())
 			{
@@ -234,7 +236,8 @@ int negamax(NegaData * nega, int alpha, int beta, int ply, int depth)
 		ply++;
 	//            if (ply == 0)
 	//                return avaliador.avaliar(tabuleiro);
-
+	if (0 == 1)
+		boardPrint(nega->board);
 	boardGerarMovimentos(nega->board, moves, false);
 	listSort(moves);
 
@@ -256,7 +259,7 @@ int negamax(NegaData * nega, int alpha, int beta, int ply, int depth)
 		for (int i=0;i<moves.size; i++)
 		{
 			move = moves.movs[i];
-			if ((visitado) && (moveHash == transp->moveHash(&move)))
+			if ((depth==0) && (visitado) && (moveHash == transp->moveHash(&move)))
 				continue;
 
 			if (timeShouldStop())
@@ -273,6 +276,7 @@ int negamax(NegaData * nega, int alpha, int beta, int ply, int depth)
 			if (!boardIsValid(nega->board))
 			{
 				boardUnmakeMove(nega->board, &move);
+
 				transp->retiraMov(nega->id, ply);
 			}
 			else
@@ -295,10 +299,6 @@ int negamax(NegaData * nega, int alpha, int beta, int ply, int depth)
 					boardUnmakeMove(nega->board, &move);
 					transp->retiraMov(nega->id, ply);
 
-					if (chaveLocal != boardGetChave(nega->board))
-					{
-						throw std::exception("erro");
-					}
 					break;
 				}
 				boardUnmakeMove(nega->board, &move);
@@ -309,7 +309,7 @@ int negamax(NegaData * nega, int alpha, int beta, int ply, int depth)
 				//     move.print();
 				// }
 			}
-			visitado = visitado || transp->moveHash(&move) == moveHash;
+			visitado = visitado || ((depth==0) && (transp->moveHash(&move) == moveHash));
 		}
 	} while (atrasados.size != 0);
 

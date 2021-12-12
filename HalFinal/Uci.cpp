@@ -121,6 +121,11 @@ void ucirun()
 				ucigo(comando);
 			}
 
+			if (comando == "print")
+			{
+				game.printBoard();
+			}
+
 			if (comando == "uci")
 				uciApresenta();
 		}
